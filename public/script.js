@@ -158,11 +158,11 @@ document.addEventListener('DOMContentLoaded', () => {
             stopMenuMusic();
         }
 
-        // Manage host pause button visibility
         if (screenElement === quizContainer) {
             if (isHost && hostTogglePauseBtn) {
                 hostTogglePauseBtn.classList.remove('hidden');
-                hostTogglePauseBtn.disabled = false; // Ensure it's enabled when shown
+                hostTogglePauseBtn.disabled = false;
+                hostTogglePauseBtn.textContent = 'Pause Spiel'; // Keep text consistent
             } else if (hostTogglePauseBtn) {
                 hostTogglePauseBtn.classList.add('hidden');
             }
@@ -172,7 +172,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // ... (displayError, showGlobalNotification, populateCategorySelector, handleCategoryChange, updatePlayerList, updateLiveScores functions remain the same)
     function displayError(element, message, duration = 3000) {
         if(element) {
             element.textContent = message;
@@ -183,16 +182,18 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function showGlobalNotification(message, type = 'error', duration = 3000) {
-        globalNotification.textContent = message;
-        globalNotification.className = 'fixed top-5 right-5 p-4 rounded-lg shadow-xl text-sm z-50 animate-pulse';
-        if (type === 'error') globalNotification.classList.add('bg-red-500', 'text-white');
-        else if (type === 'success') globalNotification.classList.add('bg-green-500', 'text-white');
-        else globalNotification.classList.add('bg-sky-500', 'text-white');
+        if(globalNotification) {
+            globalNotification.textContent = message;
+            globalNotification.className = 'fixed top-5 right-5 p-4 rounded-lg shadow-xl text-sm z-50 animate-pulse';
+            if (type === 'error') globalNotification.classList.add('bg-red-500', 'text-white');
+            else if (type === 'success') globalNotification.classList.add('bg-green-500', 'text-white');
+            else globalNotification.classList.add('bg-sky-500', 'text-white');
 
-        globalNotification.classList.remove('hidden');
-        setTimeout(() => {
-            globalNotification.classList.add('hidden');
-        }, duration);
+            globalNotification.classList.remove('hidden');
+            setTimeout(() => {
+                globalNotification.classList.add('hidden');
+            }, duration);
+        }
     }
 
     function populateCategorySelector(categories, selectedCategoryKey = null) {
@@ -301,12 +302,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
         players.forEach(player => {
             const playerDiv = document.createElement('div');
-            playerDiv.className = 'player-entry text-slate-200 py-1';
+            playerDiv.className = 'player-entry';
             let nameDisplay = player.name;
             if (player.id === currentPlayerId) {
                 nameDisplay += ' (Du)';
+                if (player.isHost) {
+                    playerDiv.classList.add('current-player-highlight');
+                }
             }
-            playerDiv.innerHTML = `<span class="player-name">${nameDisplay}</span>${player.isHost ? '<span class="player-host-badge bg-sky-500 text-xs px-2 py-0.5 rounded-full ml-2">Host</span>' : ''}`;
+            playerDiv.innerHTML = `<span class="player-name">${nameDisplay}</span>${player.isHost ? '<span class="player-host-badge">Host</span>' : ''}`;
             playerListLobby.appendChild(playerDiv);
         });
         console.log('[DEBUG] updatePlayerList - Player list populated.');
@@ -366,10 +370,20 @@ document.addEventListener('DOMContentLoaded', () => {
         const sortedScores = [...scoresData].sort((a, b) => b.score - a.score);
         sortedScores.forEach(player => {
             const scoreDiv = document.createElement('div');
-            scoreDiv.className = 'flex justify-between items-center text-slate-200';
+            scoreDiv.className = 'player-entry-quiz';
+            if (player.id === currentPlayerId) {
+                scoreDiv.classList.add('current-player-highlight');
+            }
+
             let displayName = player.name;
             if (player.id === currentPlayerId) displayName += " (Du)";
-            scoreDiv.innerHTML = `<span>${displayName}</span><span class="font-semibold">${player.score} <span class="text-purple-400 text-xs">(Streak: ${player.streak || 0})</span></span>`;
+
+            scoreDiv.innerHTML = `
+                <span class="player-name-quiz">${displayName}</span>
+                <div>
+                    <span class="player-score-quiz">${player.score} Pkt</span>
+                    <span class="player-streak-quiz">(Streak: ${player.streak || 0})</span>
+                </div>`;
             liveScoresList.appendChild(scoreDiv);
         });
     }
@@ -442,15 +456,33 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    function triggerHostPause() {
+        if (currentLobbyId && isHost && quizContainer && !quizContainer.classList.contains('hidden')) {
+            console.log('[DEBUG] Triggering hostTogglePause. isGamePaused (client-side before emit):', isGamePaused);
+            socket.emit('hostTogglePause', { lobbyId: currentLobbyId });
+        } else {
+            console.log('[DEBUG] Conditions not met for triggering host pause.');
+        }
+    }
+
     if (hostTogglePauseBtn) {
         hostTogglePauseBtn.addEventListener('click', () => {
             playSound('click');
-            console.log('[DEBUG] Host toggle pause BTN CLICKED. isHost:', isHost, 'currentLobbyId:', currentLobbyId, 'isGamePaused (client-side):', isGamePaused);
-            if (currentLobbyId && isHost) {
-                socket.emit('hostTogglePause', { lobbyId: currentLobbyId });
-            }
+            triggerHostPause();
         });
     }
+
+    document.addEventListener('keydown', (event) => {
+        if ((event.code === 'Space' || event.key === ' ') &&
+            isHost &&
+            quizContainer && !quizContainer.classList.contains('hidden') &&
+            !['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement.tagName)) {
+
+            event.preventDefault();
+            playSound('click');
+            triggerHostPause();
+        }
+    });
 
     // --- Socket.IO Event Handlers ---
     socket.on('connect', () => {
@@ -510,8 +542,15 @@ document.addEventListener('DOMContentLoaded', () => {
             if (data.isPaused) {
                 isGamePaused = true;
                 if(gamePausedOverlay) gamePausedOverlay.classList.remove('hidden');
-                if(pauseResumeMessage) pauseResumeMessage.textContent = isHost ? "Du hast das Spiel pausiert. Klicke 'Fortsetzen'." : "Das Spiel ist pausiert. Warte auf den Host.";
-                if(hostTogglePauseBtn) hostTogglePauseBtn.textContent = 'Fortsetzen';
+                if(pauseResumeMessage) {
+                    pauseResumeMessage.textContent = isHost ?
+                        "Du hast das Spiel pausiert. (Leertaste zum Pausieren/Fortsetzen)" :
+                        "Das Spiel ist pausiert. Warte auf den Host.";
+                }
+                if(hostTogglePauseBtn) {
+                    hostTogglePauseBtn.textContent = 'Pause Spiel'; // Keep text consistent
+                    hostTogglePauseBtn.disabled = !isHost;
+                }
                 if(optionsContainer) optionsContainer.querySelectorAll('.option-btn').forEach(btn => btn.disabled = true);
             }
         }
@@ -585,7 +624,8 @@ document.addEventListener('DOMContentLoaded', () => {
         if (quizContainer && !quizContainer.classList.contains('hidden')) {
             if (isHost && hostTogglePauseBtn) {
                 hostTogglePauseBtn.classList.remove('hidden');
-                hostTogglePauseBtn.disabled = false; // Ensure enabled for new host
+                hostTogglePauseBtn.disabled = false;
+                hostTogglePauseBtn.textContent = 'Pause Spiel'; // Reset text
             } else if (hostTogglePauseBtn) {
                 hostTogglePauseBtn.classList.add('hidden');
             }
@@ -602,7 +642,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if(gamePausedOverlay) gamePausedOverlay.classList.add('hidden');
         if(hostTogglePauseBtn) {
             hostTogglePauseBtn.textContent = 'Pause Spiel';
-            hostTogglePauseBtn.disabled = !isHost; // Disable if not host, enable if host
+            hostTogglePauseBtn.disabled = !isHost;
         }
     });
 
@@ -641,7 +681,7 @@ document.addEventListener('DOMContentLoaded', () => {
             data.options.forEach(optionText => {
                 const button = document.createElement('button');
                 button.textContent = optionText;
-                button.classList.add('option-btn');
+                button.className = 'option-btn';
                 button.disabled = isGamePaused;
                 button.addEventListener('click', () => {
                     playSound('click');
@@ -665,7 +705,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if(waitingForOthersMsg) waitingForOthersMsg.textContent = '';
         if(timerDisplay) {
             timerDisplay.textContent = isGamePaused ? 'Pausiert' : `${questionTimeLimit}s`;
-            timerDisplay.classList.remove('text-red-500'); // Reset color
+            timerDisplay.classList.remove('text-red-500');
             if (!isGamePaused) timerDisplay.classList.add('text-amber-400');
         }
     });
@@ -680,8 +720,12 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     socket.on('timerUpdate', (timeLeft) => {
-        if (isGamePaused) { // If game is paused, show "Pausiert" instead of countdown
-            if(timerDisplay) timerDisplay.textContent = `Pausiert`; // Keep it simple
+        if (isGamePaused) {
+            if(timerDisplay) {
+                timerDisplay.textContent = isHost ?
+                    `Pausiert (${Math.ceil(timeLeft)}s)` : // Show remaining time for host
+                    `Pausiert`;
+            }
             return;
         }
         if(!timerDisplay) return;
@@ -703,6 +747,15 @@ document.addEventListener('DOMContentLoaded', () => {
     socket.on('answerResult', (data) => {
         const selectedButton = optionsContainer ? Array.from(optionsContainer.querySelectorAll('.option-btn')).find(btn => btn.classList.contains('selected')) : null;
 
+        if (selectedButton) {
+            selectedButton.classList.remove('correct', 'incorrect-picked', 'selected');
+        }
+        if(optionsContainer) {
+            optionsContainer.querySelectorAll('.option-btn').forEach(btn => {
+                btn.classList.remove('reveal-correct', 'correct', 'incorrect-picked');
+            });
+        }
+
         if (data.isCorrect) {
             playSound('correctAnswer');
             if (data.streak > 1) {
@@ -716,10 +769,17 @@ document.addEventListener('DOMContentLoaded', () => {
         } else {
             playSound('incorrectAnswer');
             if(feedbackText) {
-                feedbackText.textContent = `Falsch. Die Antwort war ${data.correctAnswer}.`;
+                feedbackText.textContent = `Falsch. Die Antwort war: ${data.correctAnswer}.`;
                 feedbackText.className = 'text-lg font-medium text-red-400';
             }
             if(selectedButton) selectedButton.classList.add('incorrect-picked');
+            if(optionsContainer) {
+                optionsContainer.querySelectorAll('.option-btn').forEach(btn => {
+                    if (btn.textContent === data.correctAnswer) {
+                        btn.classList.add('reveal-correct');
+                    }
+                });
+            }
         }
 
         const myPlayerData = quizContainer && quizContainer.dataset.players ? JSON.parse(quizContainer.dataset.players) : [];
@@ -743,14 +803,15 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         if(waitingForOthersMsg) waitingForOthersMsg.textContent = "Nächste Frage kommt...";
 
-        if(optionsContainer) optionsContainer.querySelectorAll('.option-btn').forEach(btn => {
-            btn.disabled = true;
-            if (btn.textContent === data.correctAnswer) {
-                if (!btn.classList.contains('correct')) {
+        if(optionsContainer) {
+            optionsContainer.querySelectorAll('.option-btn').forEach(btn => {
+                btn.disabled = true;
+                btn.classList.remove('selected', 'correct', 'incorrect-picked');
+                if (btn.textContent === data.correctAnswer) {
                     btn.classList.add('reveal-correct');
                 }
-            }
-        });
+            });
+        }
         updateLiveScores(data.scores);
     });
 
@@ -812,15 +873,22 @@ document.addEventListener('DOMContentLoaded', () => {
         console.log('[DEBUG] gamePaused event received. Remaining time:', data.remainingTime);
         isGamePaused = true;
         if(gamePausedOverlay) gamePausedOverlay.classList.remove('hidden');
-        if(pauseResumeMessage) pauseResumeMessage.textContent = isHost ? "Du hast das Spiel pausiert. Klicke 'Fortsetzen'." : "Das Spiel ist pausiert. Warte auf den Host.";
+        if(pauseResumeMessage) {
+            pauseResumeMessage.textContent = isHost ?
+                "Spiel pausiert. (Leertaste zum Pausieren/Fortsetzen)" :
+                "Das Spiel ist pausiert. Warte auf den Host.";
+        }
         if(hostTogglePauseBtn && isHost) {
-            hostTogglePauseBtn.textContent = 'Fortsetzen';
-            hostTogglePauseBtn.disabled = false; // Ensure host can click it
+            hostTogglePauseBtn.textContent = 'Pause Spiel'; // Keep text as "Pause Spiel"
+            hostTogglePauseBtn.disabled = false;
         }
 
         if(optionsContainer) optionsContainer.querySelectorAll('.option-btn').forEach(btn => btn.disabled = true);
-        if(timerDisplay && data.remainingTime !== undefined) timerDisplay.textContent = `Pausiert (${Math.ceil(data.remainingTime)}s)`;
-        else if(timerDisplay) timerDisplay.textContent = 'Pausiert';
+        if(timerDisplay && data.remainingTime !== undefined) {
+            timerDisplay.textContent = isHost ? `Pausiert (${Math.ceil(data.remainingTime)}s)` : `Pausiert`;
+        } else if(timerDisplay) {
+            timerDisplay.textContent = 'Pausiert';
+        }
     });
 
     socket.on('gameResumed', () => {
@@ -829,17 +897,17 @@ document.addEventListener('DOMContentLoaded', () => {
         if(gamePausedOverlay) gamePausedOverlay.classList.add('hidden');
 
         if(hostTogglePauseBtn && isHost) {
-            hostTogglePauseBtn.textContent = 'Pause Spiel';
-            hostTogglePauseBtn.disabled = false; // Ensure host can click it
+            hostTogglePauseBtn.textContent = 'Pause Spiel'; // Keep text as "Pause Spiel"
+            hostTogglePauseBtn.disabled = false;
         }
 
         if(optionsContainer) {
             optionsContainer.querySelectorAll('.option-btn').forEach(btn => {
-                const isAnswered = btn.classList.contains('selected') ||
+                const isAnsweredOrRevealed = btn.classList.contains('selected') ||
                     btn.classList.contains('correct') ||
                     btn.classList.contains('incorrect-picked') ||
                     btn.classList.contains('reveal-correct');
-                if (!isAnswered) {
+                if (!isAnsweredOrRevealed) {
                     btn.disabled = false;
                 }
             });

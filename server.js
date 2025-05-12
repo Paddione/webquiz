@@ -1,8 +1,4 @@
 // server.js
-// NO CHANGES were made to server.js from the version you provided in the last turn.
-// The simplification was primarily on the client-side and HTML for removing player pause requests.
-// The host's pause/resume logic in this server.js version should already be functional.
-
 const express = require('express');
 const http = require('http');
 const socketIo = require('socket.io');
@@ -15,11 +11,10 @@ const io = socketIo(server);
 
 const PORT = process.env.PORT || 3000;
 
-const QUESTION_TIME_LIMIT = 60;
-const CORRECT_ANSWER_DISPLAY_DURATION = 3000;
-const BASE_POINTS_CORRECT = 100;
-const TIME_BONUS_MULTIPLIER = 5;
-const STREAK_BONUS = 25;
+// --- Game Configuration ---
+const QUESTION_TIME_LIMIT = 60; // seconds
+const CORRECT_ANSWER_DISPLAY_DURATION = 3000; // milliseconds
+// Removed: BASE_POINTS_CORRECT, TIME_BONUS_MULTIPLIER, STREAK_BONUS as per new scoring
 
 let allQuestionSets = {};
 let availableCategories = [];
@@ -224,17 +219,17 @@ io.on('connection', (socket) => {
 
         const isCorrect = currentQuestion.answer === answer;
         let pointsEarned = 0;
+
         if (isCorrect) {
-            player.streak++;
-            pointsEarned = BASE_POINTS_CORRECT;
-            const effectiveTimeLimit = QUESTION_TIME_LIMIT;
-            const timeRemainingForBonus = Math.max(0, effectiveTimeLimit - timeTaken);
-            pointsEarned += Math.floor(timeRemainingForBonus * TIME_BONUS_MULTIPLIER);
-            if (player.streak > 1) {
-                pointsEarned += (player.streak -1) * STREAK_BONUS;
-            }
+            player.streak++; // Increment streak for a correct answer
+            const timeRemaining = Math.max(0, QUESTION_TIME_LIMIT - timeTaken);
+            const pointsFromTime = Math.floor(timeRemaining); // 1 point per second left
+
+            pointsEarned = pointsFromTime * player.streak; // Multiply time points by current streak
+
         } else {
-            player.streak = 0;
+            player.streak = 0; // Reset streak on incorrect answer
+            pointsEarned = 0;
         }
         player.score += pointsEarned;
 
@@ -246,9 +241,9 @@ io.on('connection', (socket) => {
         socket.emit('answerResult', {
             isCorrect,
             correctAnswer: currentQuestion.answer,
-            score: player.score,
-            streak: player.streak,
-            pointsEarned
+            score: player.score, // Send updated total score
+            streak: player.streak, // Send updated streak
+            pointsEarned // Send points earned for this specific question
         });
 
         const allAnswered = lobby.players.every(p => p.hasAnswered);
@@ -267,26 +262,20 @@ io.on('connection', (socket) => {
                 io.to(lobbyId).emit('gameResumed');
                 console.log(`Lobby ${lobbyId} resumed by host.`);
                 if (lobby.remainingTimeOnPause !== null) {
-                    // Recalculate questionStartTime to account for the pause duration accurately
-                    // The time that had passed *before* pause = QUESTION_TIME_LIMIT - lobby.remainingTimeOnPause
-                    // So, the new questionStartTime should be now - (time_passed_before_pause)
                     const timePassedBeforePause = QUESTION_TIME_LIMIT - lobby.remainingTimeOnPause;
                     lobby.questionStartTime = Date.now() - (timePassedBeforePause * 1000);
                     startQuestionTimer(lobby, lobby.remainingTimeOnPause);
                     lobby.remainingTimeOnPause = null;
                 } else {
-                    // This case implies the game was paused without a valid remaining time (e.g., before first timer tick)
-                    // Or if remainingTimeOnPause was somehow not set. Start fresh timer.
                     console.warn(`Lobby ${lobbyId} resumed, but remainingTimeOnPause was null. Starting timer with full duration.`);
-                    lobby.questionStartTime = Date.now(); // Reset start time for a full new timer
+                    lobby.questionStartTime = Date.now();
                     startQuestionTimer(lobby, QUESTION_TIME_LIMIT);
                 }
-            } else { // Pause game
+            } else {
                 lobby.isPaused = true;
                 if (lobby.questionTimerInterval) clearInterval(lobby.questionTimerInterval);
                 if (lobby.questionTimeout) clearTimeout(lobby.questionTimeout);
 
-                // Calculate remaining time based on when the question was initially started
                 const elapsedTime = (Date.now() - lobby.questionStartTime) / 1000;
                 lobby.remainingTimeOnPause = Math.max(0, QUESTION_TIME_LIMIT - elapsedTime);
 
@@ -358,7 +347,7 @@ io.on('connection', (socket) => {
         if (lobby.questionTimerInterval) clearInterval(lobby.questionTimerInterval);
         if (lobby.questionTimeout) clearTimeout(lobby.questionTimeout);
 
-        let timeLeft = Math.ceil(duration); // Ensure we start with a whole number
+        let timeLeft = Math.ceil(duration);
         io.to(lobby.id).emit('timerUpdate', timeLeft);
 
         lobby.questionTimerInterval = setInterval(() => {
@@ -381,9 +370,9 @@ io.on('connection', (socket) => {
                 return;
             }
             console.log(`Time up for question ${lobby.currentQuestionIndex} in lobby ${lobby.id}`);
-            if(lobby.questionTimerInterval) clearInterval(lobby.questionTimerInterval); // Ensure interval is cleared
+            if(lobby.questionTimerInterval) clearInterval(lobby.questionTimerInterval);
             processQuestionEnd(lobby.id);
-        }, Math.ceil(duration) * 1000); // Use Math.ceil for timeout as well
+        }, Math.ceil(duration) * 1000);
     }
 
     function sendNextQuestion(lobbyId) {
@@ -441,7 +430,7 @@ io.on('connection', (socket) => {
         const currentQuestion = lobby.questions[lobby.currentQuestionIndex];
         if(!currentQuestion){
             console.error("processQuestionEnd: currentQuestion is undefined. Lobby:", lobbyId, "Index:", lobby.currentQuestionIndex);
-            sendNextQuestion(lobbyId); // Attempt to recover or end game
+            sendNextQuestion(lobbyId);
             return;
         }
         io.to(lobbyId).emit('questionOver', {

@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Online Multiplayer Quiz</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="style.css">
 </head>
@@ -94,21 +94,22 @@
         Kategorie: <span id="game-category-display" class="font-semibold text-sky-300">-</span>
     </div>
 
-    <div id="question-area" class="mb-6">
-        <h2 id="question-text" class="text-xl md:text-2xl font-semibold mb-6 text-slate-100 leading-relaxed min-h-[60px]">
+    <div id="question-area" class="mb-6 bg-slate-700/50 p-6 rounded-lg shadow-inner">
+        <h2 id="question-text" class="text-xl md:text-2xl font-semibold text-slate-100 leading-relaxed min-h-[60px] text-center">
             Frage erscheint hier...
         </h2>
-        <div id="options-container" class="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
-        </div>
     </div>
 
-    <div id="feedback-area" class="mb-4 h-10 text-center">
+    <div id="options-container" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+    </div>
+
+    <div id="feedback-area" class="my-6 h-10 text-center">
         <p id="feedback-text" class="text-lg font-medium"></p>
     </div>
 
-    <div id="scoreboard-quiz" class="mb-4 p-3 bg-slate-700/50 rounded-lg">
-        <h3 class="text-md font-semibold text-sky-300 mb-2 text-center">Live Punktestand</h3>
-        <div id="live-scores-list" class="text-sm space-y-1">
+    <div id="scoreboard-quiz" class="mb-4 p-4 bg-slate-700/70 rounded-lg shadow">
+        <h3 class="text-lg font-bold text-sky-300 mb-3 text-center border-b border-slate-600 pb-2">Live Punktestand</h3>
+        <div id="live-scores-list" class="text-sm space-y-2">
         </div>
     </div>
     <p id="waiting-for-others-msg" class="text-center text-slate-400 my-4 h-6"></p>
