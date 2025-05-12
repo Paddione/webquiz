@@ -10,6 +10,10 @@
 </head>
 <body class="bg-gradient-to-br from-slate-900 to-slate-800 text-white font-inter flex flex-col items-center justify-center min-h-screen p-4 selection:bg-sky-500 selection:text-white">
 
+<button id="mute-btn" class="fixed bottom-5 right-5 text-white font-semibold py-2 px-4 rounded-lg shadow-md z-50 transition-all duration-300 opacity-80 hover:opacity-100">
+    Mute
+</button>
+
 <div id="lobby-connect-container" class="w-full max-w-md bg-slate-800 p-8 rounded-xl shadow-2xl text-center">
     <h1 class="text-4xl font-bold mb-8 text-sky-400">Quiz Master</h1>
     <div class="mb-6">
@@ -47,21 +51,17 @@
     <p class="text-slate-400 mb-2">Warte auf Spieler... Teile die Lobby ID, um andere einzuladen.</p>
 
     <div id="player-list-lobby" class="mb-6 min-h-[80px] bg-slate-700 p-4 rounded-lg space-y-2">
-        <!-- Player list will be populated by JavaScript -->
     </div>
 
-    <!-- Category Selection (Host Only) -->
     <div id="category-selection-container" class="mb-6 hidden">
         <label for="category-select" class="block text-lg mb-2 text-slate-300 font-semibold">
-            Fragenkategorie auswählen (Host):
+            Fragenkategorie auswählen:
         </label>
-        <select id="category-select" class="w-full p-3 rounded-lg bg-slate-700 text-white border border-slate-600 focus:ring-2 focus:ring-sky-500 outline-none transition-all cursor-pointer">
-            <!-- Options will be populated by JavaScript -->
+        <select id="category-select" class="w-full p-3 rounded-lg bg-slate-700 text-white border border-slate-600 focus:ring-2 focus:ring-sky-500 outline-none transition-all cursor-pointer disabled:cursor-not-allowed disabled:opacity-70">
         </select>
-        <p class="text-sm text-slate-400 mt-1">Wähle eine Kategorie aus, bevor du das Spiel startest.</p>
+        <p class="text-sm text-slate-400 mt-1">Nur der Host kann die Kategorie ändern.</p>
     </div>
 
-    <!-- Category Display for All Players -->
     <p id="chosen-category-display" class="text-center text-slate-300 mb-4 h-6 hidden">
         Ausgewählte Kategorie: <span id="current-category-text" class="font-semibold text-amber-300"></span>
     </p>
@@ -90,7 +90,6 @@
             Frage erscheint hier...
         </h2>
         <div id="options-container" class="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
-            <!-- Options will be populated by JavaScript -->
         </div>
     </div>
 
@@ -101,7 +100,6 @@
     <div id="scoreboard-quiz" class="mb-4 p-3 bg-slate-700/50 rounded-lg">
         <h3 class="text-md font-semibold text-sky-300 mb-2 text-center">Live Punktestand</h3>
         <div id="live-scores-list" class="text-sm space-y-1">
-            <!-- Live scores will be populated by JavaScript -->
         </div>
     </div>
     <p id="waiting-for-others-msg" class="text-center text-slate-400 my-4 h-6"></p>
@@ -110,7 +108,6 @@
 <div id="game-over-container" class="hidden w-full max-w-md bg-slate-800 p-8 rounded-xl shadow-2xl text-center">
     <h1 class="text-4xl font-bold mb-6 text-sky-400">Spiel vorbei!</h1>
     <div id="final-scores" class="mb-8 space-y-2">
-        <!-- Final scores will be populated by JavaScript -->
     </div>
     <button id="play-again-host-btn" class="hidden w-full bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-6 rounded-lg text-lg shadow-lg transition-transform transform hover:scale-105 mb-4 disabled:opacity-50 disabled:cursor-not-allowed">
         Erneut spielen (Host)

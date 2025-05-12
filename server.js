@@ -92,16 +92,20 @@ io.on('connection', (socket) => {
             id: lobbyId,
             players: [{ id: socket.id, name: playerName || `Spieler ${socket.id.substring(0,4)}`, score: 0, streak: 0, isHost: true, hasAnswered: false }],
             currentQuestionIndex: -1,
-            questions: [], // Will be set when game starts with a category
-            selectedCategory: null, // Store the selected category
-            gameState: 'waiting', // waiting, active, finished
+            questions: [],
+            selectedCategory: null,
+            gameState: 'waiting',
             questionStartTime: null,
             questionTimerInterval: null,
             playerAnswers: {},
         };
         socket.join(lobbyId);
-        // Send available categories to the host
-        socket.emit('lobbyCreated', { lobbyId, players: lobbies[lobbyId].players, playerId: socket.id, availableCategories });
+        socket.emit('lobbyCreated', {
+            lobbyId,
+            players: lobbies[lobbyId].players,
+            playerId: socket.id,
+            availableCategories: availableCategories // Send all available categories to the host
+        });
         console.log(`Lobby ${lobbyId} created by ${playerName} (${socket.id})`);
     });
 
@@ -119,12 +123,38 @@ io.on('connection', (socket) => {
             const newPlayer = { id: socket.id, name: playerName || `Spieler ${socket.id.substring(0,4)}`, score: 0, streak: 0, isHost: false, hasAnswered: false };
             lobby.players.push(newPlayer);
             socket.join(lobbyId);
-            // Non-hosts don't need the category list initially, but they will see the chosen one if game starts
-            socket.emit('joinedLobby', { lobbyId, players: lobby.players, playerId: socket.id, gameState: lobby.gameState, selectedCategory: lobby.selectedCategory, availableCategories: lobby.players.find(p=>p.id === socket.id && p.isHost) ? availableCategories : [] });
-            io.to(lobbyId).emit('playerJoined', { players: lobby.players });
-            console.log(`${playerName} (${socket.id}) joined lobby ${lobbyId}`);
+
+            socket.emit('joinedLobby', {
+                lobbyId,
+                players: lobby.players,
+                playerId: socket.id,
+                gameState: lobby.gameState,
+                selectedCategory: lobby.selectedCategory,
+                allCategoriesForLobby: availableCategories // Send all categories for UI consistency
+            });
+            // Notify other players
+            socket.to(lobbyId).emit('playerJoined', {
+                players: lobby.players,
+                joinedPlayerId: socket.id,
+                joinedPlayerName: newPlayer.name,
+                allCategoriesForLobby: availableCategories, // Send all categories for UI consistency
+                selectedCategory: lobby.selectedCategory
+            });
+            console.log(`${newPlayer.name} (${socket.id}) joined lobby ${lobbyId}`);
         } else {
             socket.emit('lobbyError', 'Lobby nicht gefunden.');
+        }
+    });
+
+    socket.on('hostSelectedCategory', ({ lobbyId, categoryKey }) => {
+        const lobby = lobbies[lobbyId];
+        if (lobby && lobby.players.find(p => p.id === socket.id && p.isHost)) {
+            lobby.selectedCategory = categoryKey;
+            console.log(`Lobby ${lobbyId}: Host ${socket.id} selected category ${categoryKey}`);
+            // Emit to all in lobby (including host for consistency, or use socket.to(lobbyId).emit(...))
+            io.to(lobbyId).emit('categoryUpdatedByHost', categoryKey);
+        } else {
+            console.warn(`Unauthorized category selection attempt or lobby not found. Lobby: ${lobbyId}, Socket: ${socket.id}`);
         }
     });
 
@@ -132,31 +162,44 @@ io.on('connection', (socket) => {
         const lobby = lobbies[lobbyId];
         if (lobby && lobby.players.find(p => p.id === socket.id && p.isHost)) {
             if (lobby.players.length < 1) {
-                socket.emit('lobbyError', 'Nicht genügend Spieler, um das Spiel zu starten.');
+                socket.emit('startGameError', 'Nicht genügend Spieler, um das Spiel zu starten.');
                 return;
             }
-            if (!categoryKey || !allQuestionSets[categoryKey]) {
-                socket.emit('lobbyError', 'Ungültige Fragenkategorie ausgewählt.');
+            // Category should have been set by 'hostSelectedCategory' and stored in lobby.selectedCategory
+            // We use categoryKey from the client as a final confirmation, but server's lobby.selectedCategory should be the truth
+            if (!lobby.selectedCategory || lobby.selectedCategory !== categoryKey) {
+                console.warn(`Category mismatch or not selected for lobby ${lobbyId}. Client sent: ${categoryKey}, Server has: ${lobby.selectedCategory}`);
+                // Optionally re-affirm or error
+                if (!lobby.selectedCategory && allQuestionSets[categoryKey]) { // If server had none, but client sent valid
+                    lobby.selectedCategory = categoryKey;
+                } else if (!lobby.selectedCategory) {
+                    socket.emit('startGameError', 'Bitte wähle zuerst eine gültige Fragenkategorie aus.');
+                    return;
+                }
+                // If they differ, server's current selectedCategory takes precedence
+            }
+
+            if (!allQuestionSets[lobby.selectedCategory]) {
+                socket.emit('startGameError', 'Ungültige Fragenkategorie ausgewählt.');
                 return;
             }
 
-            lobby.selectedCategory = categoryKey;
-            lobby.questions = shuffleArray([...allQuestionSets[categoryKey]]); // Use questions from selected category
+            lobby.questions = shuffleArray([...allQuestionSets[lobby.selectedCategory]]);
             if (!lobby.questions || lobby.questions.length === 0) {
-                socket.emit('lobbyError', `Keine Fragen in der Kategorie "${categoryKey}" gefunden.`);
-                // Reset to allow re-selection or error handling
-                lobby.selectedCategory = null;
-                lobby.questions = [];
+                socket.emit('startGameError', `Keine Fragen in der Kategorie "${lobby.selectedCategory}" gefunden.`);
+                lobby.selectedCategory = null; // Reset if category is empty
+                io.to(lobbyId).emit('categoryUpdatedByHost', null); // Inform clients category is reset
                 return;
             }
 
             lobby.gameState = 'active';
             lobby.currentQuestionIndex = -1;
+            lobby.playerAnswers = {}; // Reset answers for new game
             io.to(lobbyId).emit('gameStarted', { lobbyId, players: lobby.players, category: lobby.selectedCategory });
             console.log(`Game started in lobby ${lobbyId} with category "${lobby.selectedCategory}"`);
             sendNextQuestion(lobbyId);
         } else {
-            socket.emit('lobbyError', 'Nur der Host kann das Spiel starten oder die Lobby wurde nicht gefunden.');
+            socket.emit('startGameError', 'Nur der Host kann das Spiel starten oder die Lobby wurde nicht gefunden.');
         }
     });
 
@@ -178,9 +221,7 @@ io.on('connection', (socket) => {
         const currentQuestion = lobby.questions[lobby.currentQuestionIndex];
 
         if (!currentQuestion) {
-            console.error(`Error: currentQuestion is undefined in lobby ${lobbyId} at index ${lobby.currentQuestionIndex}. This should not happen.`);
-            // Attempt to gracefully handle or end game for this lobby
-            // For now, just prevent further errors for this answer
+            console.error(`Error: currentQuestion is undefined in lobby ${lobbyId} at index ${lobby.currentQuestionIndex}.`);
             socket.emit('answerResult', {
                 isCorrect: false,
                 correctAnswer: "Fehler: Frage nicht gefunden",
@@ -188,13 +229,10 @@ io.on('connection', (socket) => {
                 streak: player.streak,
                 pointsEarned: 0
             });
-            // Consider ending the game or moving to next question if possible
-            // processQuestionEnd(lobbyId); // This might be risky if state is corrupt
             return;
         }
 
         const isCorrect = currentQuestion.answer === answer;
-
         let pointsEarned = 0;
         if (isCorrect) {
             player.streak++;
@@ -245,11 +283,26 @@ io.on('connection', (socket) => {
                     clearInterval(lobby.questionTimerInterval);
                     delete lobbies[lobbyId];
                 } else {
+                    let hostChanged = false;
                     if (disconnectedPlayer.isHost && lobby.players.length > 0) {
                         lobby.players[0].isHost = true;
-                        io.to(lobbyId).emit('hostChanged', { newHostId: lobby.players[0].id, players: lobby.players, availableCategories: availableCategories });
+                        hostChanged = true;
                     }
-                    io.to(lobbyId).emit('playerLeft', { players: lobby.players, disconnectedPlayerName: disconnectedPlayer.name });
+                    // Emit playerLeft first
+                    io.to(lobbyId).emit('playerLeft', {
+                        players: lobby.players,
+                        disconnectedPlayerName: disconnectedPlayer.name,
+                        selectedCategory: lobby.selectedCategory // Keep clients informed of current category
+                    });
+                    // Then emit hostChanged if it occurred
+                    if (hostChanged) {
+                        io.to(lobbyId).emit('hostChanged', {
+                            newHostId: lobby.players[0].id,
+                            players: lobby.players,
+                            availableCategories: availableCategories, // Send all categories for new host
+                            selectedCategory: lobby.selectedCategory
+                        });
+                    }
 
                     if (lobby.gameState === 'active' && lobby.players.every(p => p.hasAnswered)) {
                         clearTimeout(lobby.questionTimeout);
@@ -280,9 +333,9 @@ io.on('connection', (socket) => {
         }
 
         const question = lobby.questions[lobby.currentQuestionIndex];
-        if (!question) { // Safety check
+        if (!question) {
             console.error(`Error: Question at index ${lobby.currentQuestionIndex} for category ${lobby.selectedCategory} is undefined.`);
-            endGame(lobbyId); // End game if questions run out unexpectedly
+            endGame(lobbyId);
             return;
         }
 
@@ -327,10 +380,9 @@ io.on('connection', (socket) => {
         lobby.questionTimeout = null;
 
         const currentQuestion = lobby.questions[lobby.currentQuestionIndex];
-        if(!currentQuestion){ // Safety check if question index is out of bounds or questions array is empty
+        if(!currentQuestion){
             console.error("processQuestionEnd: currentQuestion is undefined. Lobby:", lobbyId, "Index:", lobby.currentQuestionIndex);
-            // Potentially end game or skip to next if possible, but this indicates a problem.
-            sendNextQuestion(lobbyId); // Try to move to next or end game
+            sendNextQuestion(lobbyId);
             return;
         }
         io.to(lobbyId).emit('questionOver', {
@@ -340,7 +392,7 @@ io.on('connection', (socket) => {
 
         setTimeout(() => {
             sendNextQuestion(lobbyId);
-        }, 4000);
+        }, 4000); // Time to show correct answer
     }
 
     function endGame(lobbyId) {
@@ -349,11 +401,11 @@ io.on('connection', (socket) => {
 
         lobby.gameState = 'finished';
         const finalScores = lobby.players
-            .map(p => ({ name: p.name, score: p.score }))
+            .map(p => ({ name: p.name, score: p.score, originalId: p.id })) // Add originalId for client-side self-identification
             .sort((a, b) => b.score - a.score);
 
         io.to(lobbyId).emit('gameOver', { finalScores });
-        console.log(`Game ended in lobby ${lobbyId}. Final scores:`, finalScores);
+        console.log(`Game ended in lobby ${lobbyId}. Final scores:`, finalScores.map(s => ({name: s.name, score: s.score})));
     }
 
     socket.on('playAgain', (lobbyId) => {
@@ -365,16 +417,12 @@ io.on('connection', (socket) => {
                 p.hasAnswered = false;
             });
             lobby.currentQuestionIndex = -1;
-            // Questions and category remain as selected for the previous game,
-            // or host can choose a new one if UI allows before starting again.
-            // For simplicity, we keep the same category and re-shuffle.
-            if (lobby.selectedCategory && allQuestionSets[lobby.selectedCategory]) {
-                lobby.questions = shuffleArray([...allQuestionSets[lobby.selectedCategory]]);
-            } else {
-                // Fallback or error if category was lost
-                lobby.questions = [];
-                console.error(`Play Again: Category ${lobby.selectedCategory} not found for lobby ${lobbyId}`);
-            }
+
+            // Category is reset, host needs to choose again.
+            const previousCategory = lobby.selectedCategory;
+            lobby.selectedCategory = null;
+            lobby.questions = []; // Clear questions
+
             lobby.gameState = 'waiting';
             lobby.playerAnswers = {};
 
@@ -387,10 +435,10 @@ io.on('connection', (socket) => {
                 lobbyId: lobby.id,
                 players: lobby.players,
                 gameState: lobby.gameState,
-                availableCategories: availableCategories, // Send categories again for host
-                selectedCategory: lobby.selectedCategory // Inform about current category
+                availableCategories: availableCategories, // Send all categories again
+                selectedCategory: null // Explicitly null as host needs to re-select
             });
-            console.log(`Lobby ${lobbyId} reset for a new game with category ${lobby.selectedCategory}.`);
+            console.log(`Lobby ${lobbyId} reset for a new game. Host needs to select category.`);
         } else {
             socket.emit('lobbyError', 'Nur der Host kann das Spiel neu starten oder die Lobby wurde nicht gefunden.');
         }
@@ -403,8 +451,8 @@ let lobbies = {};
 
 // --- Start Server ---
 server.listen(PORT, () => {
-    loadQuestions();
+    loadQuestions(); // Load questions at startup
     console.log(`Quiz server running on http://localhost:${PORT}`);
     console.log(`To play, open public/index.html in your browser or navigate to the root URL.`);
-    console.log(`If using Docker, it will be mapped to http://localhost:4000`);
+    console.log(`If using Docker, it will be mapped to http://localhost:4000 (or as per your docker-compose.yml)`);
 });

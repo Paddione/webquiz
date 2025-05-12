@@ -3,7 +3,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const socket = io(); // Connect to the server
 
     // --- DOM Elements ---
-    // Lobby Connect Screen
+    // ... (all other DOM elements remain the same) ...
     const lobbyConnectContainer = document.getElementById('lobby-connect-container');
     const playerNameInput = document.getElementById('player-name');
     const createLobbyBtn = document.getElementById('create-lobby-btn');
@@ -11,7 +11,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const joinLobbyBtn = document.getElementById('join-lobby-btn');
     const connectErrorMsg = document.getElementById('connect-error-msg');
 
-    // Lobby Waiting Room Screen
     const lobbyWaitingRoom = document.getElementById('lobby-waiting-room');
     const displayLobbyId = document.getElementById('display-lobby-id');
     const copyLobbyIdBtn = document.getElementById('copy-lobby-id-btn');
@@ -24,7 +23,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const startGameLobbyBtn = document.getElementById('start-game-lobby-btn');
     const startGameErrorMsg = document.getElementById('start-game-error-msg');
 
-    // Quiz Game Screen
     const quizContainer = document.getElementById('quiz-container');
     const playerInfoQuiz = document.getElementById('player-info-quiz');
     const questionCounter = document.getElementById('question-counter');
@@ -36,15 +34,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const liveScoresList = document.getElementById('live-scores-list');
     const waitingForOthersMsg = document.getElementById('waiting-for-others-msg');
 
-    // Game Over Screen
     const gameOverContainer = document.getElementById('game-over-container');
     const finalScoresDiv = document.getElementById('final-scores');
     const playAgainHostBtn = document.getElementById('play-again-host-btn');
     const waitingForHostPlayAgainBtn = document.getElementById('waiting-for-host-play-again-btn');
     const leaveLobbyBtn = document.getElementById('leave-lobby-btn');
 
-    // Global Notification
     const globalNotification = document.getElementById('global-notification');
+    const muteBtn = document.getElementById('mute-btn'); // Mute button
 
     // --- Game State Variables ---
     let currentLobbyId = null;
@@ -53,8 +50,13 @@ document.addEventListener('DOMContentLoaded', () => {
     let isHost = false;
     let questionTimeLimit = 15;
     let currentSelectedCategoryKey = null;
+    let allAvailableCategoriesCache = [];
+    let isMuted = false; // Mute state
 
     // --- Sound Effects ---
+    const soundEffectsVolume = 0.3; // Default volume for general sound effects
+    const menuMusicVolume = 0.5;   // Default volume for menu music
+
     const sounds = {
         click: new Audio('/sounds/click.mp3'),
         correctAnswer: new Audio('/sounds/correctanswer.mp3'),
@@ -68,12 +70,58 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     sounds.menuMusic.loop = true;
-    sounds.menuMusic.volume = 0.3;
+    sounds.menuMusic.volume = menuMusicVolume; // Apply initial menu music volume
+
+    function updateMuteButtonAppearance() {
+        if (muteBtn) {
+            muteBtn.textContent = isMuted ? 'Unmute' : 'Mute';
+            if (isMuted) {
+                // Style for Muted state (e.g., red background)
+                muteBtn.classList.remove('bg-sky-600', 'hover:bg-sky-700');
+                muteBtn.classList.add('bg-red-600', 'hover:bg-red-700');
+            } else {
+                // Style for Unmuted state (e.g., sky blue background)
+                muteBtn.classList.remove('bg-red-600', 'hover:bg-red-700');
+                muteBtn.classList.add('bg-sky-600', 'hover:bg-sky-700');
+            }
+        }
+    }
+
+    function toggleMute() {
+        isMuted = !isMuted;
+        updateMuteButtonAppearance(); // Update text and style
+        if (isMuted) {
+            stopMenuMusic();
+        } else {
+            const currentScreenElement = [lobbyConnectContainer, lobbyWaitingRoom, gameOverContainer].find(
+                s => s && !s.classList.contains('hidden')
+            );
+            if (currentScreenElement) {
+                startMenuMusic();
+            }
+        }
+        console.log('[DEBUG] Mute toggled. isMuted:', isMuted);
+    }
+
 
     function playSound(soundName) {
+        if (isMuted && soundName !== 'click') return; // Allow click sound even when muted, or remove '&& soundName !== 'click'' to mute all
+        if (isMuted && soundName === 'click' && sounds[soundName]) { // Special handling for click if allowed when muted
+            sounds[soundName].volume = soundEffectsVolume * 0.5; // Play click softer if muted but allowed
+            sounds[soundName].currentTime = 0;
+            sounds[soundName].play().catch(error => console.log(`Error playing sound ${soundName}:`, error));
+            return;
+        }
+        if (isMuted) return; // If not click, and muted, do nothing.
+
         const sound = sounds[soundName];
         if (sound) {
             sound.currentTime = 0;
+            if (soundName !== 'menuMusic') {
+                sound.volume = soundEffectsVolume;
+            } else {
+                sound.volume = menuMusicVolume;
+            }
             sound.play().catch(error => console.log(`Error playing sound ${soundName}:`, error));
         } else {
             console.warn(`Sound not found: ${soundName}`);
@@ -81,6 +129,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function startMenuMusic() {
+        if (isMuted) return;
+
+        sounds.menuMusic.volume = menuMusicVolume;
         if (sounds.menuMusic.paused) {
             sounds.menuMusic.play().catch(error => console.log("Error playing menu music:", error));
         }
@@ -91,20 +142,31 @@ document.addEventListener('DOMContentLoaded', () => {
         sounds.menuMusic.currentTime = 0;
     }
 
+    // ... (rest of the showScreen, displayError, showGlobalNotification, populateCategorySelector, handleCategoryChange, updatePlayerList, updateLiveScores functions remain the same as the previous version) ...
     function showScreen(screenElement) {
+        console.log('[DEBUG] showScreen called for:', screenElement ? screenElement.id : 'undefined element');
         [lobbyConnectContainer, lobbyWaitingRoom, quizContainer, gameOverContainer].forEach(s => s.classList.add('hidden'));
-        screenElement.classList.remove('hidden');
+        if (screenElement) {
+            screenElement.classList.remove('hidden');
+        } else {
+            console.error("[DEBUG] showScreen: screenElement is null or undefined!");
+            return;
+        }
 
         if (screenElement === lobbyConnectContainer || screenElement === lobbyWaitingRoom || screenElement === gameOverContainer) {
-            startMenuMusic();
+            startMenuMusic(); // This will respect the isMuted state
         } else {
             stopMenuMusic();
         }
     }
 
     function displayError(element, message, duration = 3000) {
-        element.textContent = message;
-        setTimeout(() => { element.textContent = ''; }, duration);
+        if(element) {
+            element.textContent = message;
+            setTimeout(() => { element.textContent = ''; }, duration);
+        } else {
+            console.warn("[DEBUG] displayError: element is null for message:", message);
+        }
     }
 
     function showGlobalNotification(message, type = 'error', duration = 3000) {
@@ -120,30 +182,39 @@ document.addEventListener('DOMContentLoaded', () => {
         }, duration);
     }
 
-    // Fixed function to populate category selector
     function populateCategorySelector(categories, selectedCategoryKey = null) {
+        console.log('[DEBUG] populateCategorySelector - START. Categories received:', JSON.stringify(categories), 'Selected:', selectedCategoryKey);
+
+        if (!categorySelect) {
+            console.error("[DEBUG] populateCategorySelector: categorySelect element not found!");
+            return;
+        }
+
+        allAvailableCategoriesCache = Array.isArray(categories) ? [...categories] : [];
+        console.log('[DEBUG] populateCategorySelector - allAvailableCategoriesCache updated:', JSON.stringify(allAvailableCategoriesCache));
+
         categorySelect.innerHTML = '';
 
-        console.log('Populating category selector with:', categories, 'Selected:', selectedCategoryKey);
-
-        if (!categories || categories.length === 0) {
+        if (allAvailableCategoriesCache.length === 0) {
             const option = document.createElement('option');
             option.value = "";
             option.textContent = "Keine Kategorien verfügbar";
             categorySelect.appendChild(option);
             categorySelect.disabled = true;
-            console.warn('No categories available for dropdown');
+            console.warn('[DEBUG] populateCategorySelector - No categories available for dropdown (allAvailableCategoriesCache is empty).');
+            if(chosenCategoryDisplay) chosenCategoryDisplay.classList.add('hidden');
             return;
         }
 
-        // Add a default "Choose category" option
         const defaultOption = document.createElement('option');
         defaultOption.value = "";
         defaultOption.textContent = "-- Kategorie auswählen --";
         defaultOption.disabled = true;
+        defaultOption.selected = !selectedCategoryKey;
         categorySelect.appendChild(defaultOption);
+        console.log('[DEBUG] populateCategorySelector - Added default option.');
 
-        categories.forEach(categoryKey => {
+        allAvailableCategoriesCache.forEach(categoryKey => {
             const option = document.createElement('option');
             option.value = categoryKey;
             option.textContent = categoryKey;
@@ -152,90 +223,132 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             categorySelect.appendChild(option);
         });
+        console.log('[DEBUG] populateCategorySelector - Added all category options. Current HTML:', categorySelect.innerHTML);
 
-        categorySelect.disabled = false;
-
-        // Set currentSelectedCategoryKey based on selection
-        if (selectedCategoryKey && categories.includes(selectedCategoryKey)) {
+        if (selectedCategoryKey && allAvailableCategoriesCache.includes(selectedCategoryKey)) {
             currentSelectedCategoryKey = selectedCategoryKey;
             categorySelect.value = selectedCategoryKey;
+            if(currentCategoryText) currentCategoryText.textContent = selectedCategoryKey;
+            if(chosenCategoryDisplay) chosenCategoryDisplay.classList.remove('hidden');
         } else {
             currentSelectedCategoryKey = null;
             categorySelect.value = "";
+            if(currentCategoryText) currentCategoryText.textContent = "";
+            if(chosenCategoryDisplay) chosenCategoryDisplay.classList.add('hidden');
         }
 
-        handleCategoryChange();
+        console.log('[DEBUG] populateCategorySelector - END. currentSelectedCategoryKey:', currentSelectedCategoryKey, 'categorySelect.value:', categorySelect.value);
     }
 
-    // Fixed function to handle category changes
     function handleCategoryChange() {
+        console.log('[DEBUG] handleCategoryChange - START. Current categorySelect.value:', categorySelect.value, 'isHost:', isHost);
         if (isHost) {
             currentSelectedCategoryKey = categorySelect.value || null;
+            console.log('[DEBUG] handleCategoryChange - Host selected category:', currentSelectedCategoryKey);
 
-            if (currentSelectedCategoryKey) {
-                chosenCategoryDisplay.classList.remove('hidden');
-                currentCategoryText.textContent = currentSelectedCategoryKey;
+            if (currentLobbyId) {
+                socket.emit('hostSelectedCategory', { lobbyId: currentLobbyId, categoryKey: currentSelectedCategoryKey });
             } else {
-                chosenCategoryDisplay.classList.add('hidden');
-                currentCategoryText.textContent = "";
+                console.warn("[DEBUG] handleCategoryChange: currentLobbyId is null, cannot emit selection.");
             }
 
-            // Update start button state
-            const playerCount = playerListLobby.children.length;
-            startGameLobbyBtn.disabled = !currentSelectedCategoryKey || playerCount < 1;
+            const playerCount = playerListLobby ? playerListLobby.children.length : 0;
+            if(startGameLobbyBtn) startGameLobbyBtn.disabled = !currentSelectedCategoryKey || playerCount < 1;
+            console.log('[DEBUG] handleCategoryChange - Start Game Button Disabled:', startGameLobbyBtn ? startGameLobbyBtn.disabled : 'N/A');
+
+            if (currentSelectedCategoryKey) {
+                if(currentCategoryText) currentCategoryText.textContent = currentSelectedCategoryKey;
+                if(chosenCategoryDisplay) chosenCategoryDisplay.classList.remove('hidden');
+            } else {
+                if(currentCategoryText) currentCategoryText.textContent = "";
+                if(chosenCategoryDisplay) chosenCategoryDisplay.classList.add('hidden');
+            }
+        } else {
+            console.log('[DEBUG] handleCategoryChange - Not host, no action taken for emission.');
         }
     }
 
-    // Fixed updatePlayerList function
-    function updatePlayerList(players, hostCategories = [], currentCatFromServer = null) {
-        console.log('Updating player list:', players.length, 'players, Categories:', hostCategories, 'Current cat:', currentCatFromServer);
+    function updatePlayerList(players, initialLobbyCategories = [], currentCatFromServer = null) {
+        console.log('[DEBUG] updatePlayerList - START. Players:', players.length, 'InitialLobbyCategories:', JSON.stringify(initialLobbyCategories), 'CurrentCatFromServer:', currentCatFromServer, 'CurrentPlayerId:', currentPlayerId);
 
+        if (!playerListLobby) {
+            console.error("[DEBUG] updatePlayerList: playerListLobby element not found!");
+            return;
+        }
         playerListLobby.innerHTML = '';
-        players.forEach(player => {
-            const playerDiv = document.createElement('div');
-            playerDiv.className = 'player-entry';
-            let nameDisplay = player.name;
-            if (player.id === currentPlayerId) nameDisplay += ' (Du)';
-            playerDiv.innerHTML = `<span class="player-name">${nameDisplay}</span>${player.isHost ? '<span class="player-host-badge">Host</span>' : ''}`;
-            playerListLobby.appendChild(playerDiv);
-        });
 
         const me = players.find(p => p.id === currentPlayerId);
         if (me) {
             isHost = me.isHost;
+            console.log('[DEBUG] updatePlayerList - Updated local isHost to:', isHost);
+        } else {
+            console.warn('[DEBUG] updatePlayerList - Current player not found in player list. Assuming not host.');
+            isHost = false;
+        }
 
-            if (isHost) {
+        players.forEach(player => {
+            const playerDiv = document.createElement('div');
+            playerDiv.className = 'player-entry text-slate-200 py-1';
+            let nameDisplay = player.name;
+            if (player.id === currentPlayerId) {
+                nameDisplay += ' (Du)';
+            }
+            playerDiv.innerHTML = `<span class="player-name">${nameDisplay}</span>${player.isHost ? '<span class="player-host-badge bg-sky-500 text-xs px-2 py-0.5 rounded-full ml-2">Host</span>' : ''}`;
+            playerListLobby.appendChild(playerDiv);
+        });
+        console.log('[DEBUG] updatePlayerList - Player list populated.');
+
+        const categoriesForDropdown = (Array.isArray(initialLobbyCategories) && initialLobbyCategories.length > 0)
+            ? initialLobbyCategories
+            : allAvailableCategoriesCache;
+
+        console.log('[DEBUG] updatePlayerList - categoriesForDropdown determined as:', JSON.stringify(categoriesForDropdown));
+
+        if (categorySelectionContainer) {
+            if (categoriesForDropdown && categoriesForDropdown.length > 0) {
                 categorySelectionContainer.classList.remove('hidden');
-
-                if (hostCategories && hostCategories.length > 0) {
-                    populateCategorySelector(hostCategories, currentCatFromServer || currentSelectedCategoryKey);
-                } else {
-                    console.error('Host has no categories available');
-                    categorySelect.innerHTML = '<option value="">Keine Kategorien verfügbar</option>';
-                    categorySelect.disabled = true;
-                }
-
-                lobbyMessage.textContent = "Du bist der Host. Wähle eine Kategorie und starte das Spiel.";
-                startGameLobbyBtn.classList.remove('hidden');
-
-                const hasCategory = categorySelect.value && categorySelect.value !== "";
-                startGameLobbyBtn.disabled = players.length < 1 || !hasCategory;
+                console.log('[DEBUG] updatePlayerList - Category selection container UNHIDDEN.');
+                populateCategorySelector(categoriesForDropdown, currentCatFromServer || currentSelectedCategoryKey);
             } else {
                 categorySelectionContainer.classList.add('hidden');
-                startGameLobbyBtn.classList.add('hidden');
-                lobbyMessage.textContent = "Warte, bis der Host das Spiel startet...";
-
-                if (currentCatFromServer) {
-                    chosenCategoryDisplay.classList.remove('hidden');
-                    currentCategoryText.textContent = currentCatFromServer;
-                } else {
-                    chosenCategoryDisplay.classList.add('hidden');
-                }
+                console.log('[DEBUG] updatePlayerList - No categories to display, category selection container HIDDEN.');
             }
+        } else {
+            console.error("[DEBUG] updatePlayerList: categorySelectionContainer element not found!");
         }
+
+        if (categorySelect) {
+            categorySelect.disabled = !isHost;
+            console.log('[DEBUG] updatePlayerList - Category select disabled state set to:', categorySelect.disabled);
+        } else {
+            console.error("[DEBUG] updatePlayerList: categorySelect element not found for disabling!");
+        }
+
+        if (isHost) {
+            if(lobbyMessage) lobbyMessage.textContent = "Du bist der Host. Wähle eine Kategorie und starte das Spiel.";
+            if(startGameLobbyBtn) {
+                startGameLobbyBtn.classList.remove('hidden');
+                const playerCount = playerListLobby.children.length;
+                startGameLobbyBtn.disabled = !categorySelect.value || playerCount < 1;
+                console.log('[DEBUG] updatePlayerList - Host UI updated. Start button unhidden. Disabled:', startGameLobbyBtn.disabled);
+            }
+        } else {
+            if(lobbyMessage) lobbyMessage.textContent = "Warte, bis der Host das Spiel startet oder eine Kategorie wählt...";
+            if(startGameLobbyBtn) startGameLobbyBtn.classList.add('hidden');
+
+            if (currentCatFromServer) {
+                if(currentCategoryText) currentCategoryText.textContent = currentCatFromServer;
+                if(chosenCategoryDisplay) chosenCategoryDisplay.classList.remove('hidden');
+            } else {
+                if(chosenCategoryDisplay) chosenCategoryDisplay.classList.add('hidden');
+            }
+            console.log('[DEBUG] updatePlayerList - Non-Host UI updated.');
+        }
+        console.log('[DEBUG] updatePlayerList - END.');
     }
 
     function updateLiveScores(scoresData) {
+        if (!liveScoresList) return;
         liveScoresList.innerHTML = '';
         const sortedScores = [...scoresData].sort((a, b) => b.score - a.score);
         sortedScores.forEach(player => {
@@ -249,28 +362,28 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // --- Event Listeners for UI ---
-    createLobbyBtn.addEventListener('click', () => {
+    if(createLobbyBtn) createLobbyBtn.addEventListener('click', () => {
         playSound('click');
         const playerName = playerNameInput.value.trim() || 'AnonSpieler';
         socket.emit('createLobby', playerName);
         createLobbyBtn.disabled = true;
-        joinLobbyBtn.disabled = true;
+        if(joinLobbyBtn) joinLobbyBtn.disabled = true;
     });
 
-    joinLobbyBtn.addEventListener('click', () => {
+    if(joinLobbyBtn) joinLobbyBtn.addEventListener('click', () => {
         playSound('click');
         const lobbyId = lobbyIdInput.value.trim().toUpperCase();
         const playerName = playerNameInput.value.trim() || 'AnonSpieler';
         if (lobbyId) {
             socket.emit('joinLobby', { lobbyId, playerName });
-            createLobbyBtn.disabled = true;
+            if(createLobbyBtn) createLobbyBtn.disabled = true;
             joinLobbyBtn.disabled = true;
         } else {
             displayError(connectErrorMsg, 'Bitte gib eine Lobby ID ein.');
         }
     });
 
-    copyLobbyIdBtn.addEventListener('click', () => {
+    if(copyLobbyIdBtn) copyLobbyIdBtn.addEventListener('click', () => {
         playSound('click');
         if (currentLobbyId) {
             navigator.clipboard.writeText(currentLobbyId)
@@ -279,29 +392,29 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    categorySelect.addEventListener('change', handleCategoryChange);
+    if(categorySelect) categorySelect.addEventListener('change', handleCategoryChange);
 
-    startGameLobbyBtn.addEventListener('click', () => {
+    if(startGameLobbyBtn) startGameLobbyBtn.addEventListener('click', () => {
         playSound('click');
         if (isHost && currentLobbyId) {
-            const selectedCategory = categorySelect.value;
-            if (!selectedCategory) {
+            const selectedCategoryFromDropdown = categorySelect.value;
+            if (!selectedCategoryFromDropdown) {
                 displayError(startGameErrorMsg, "Bitte wähle eine Fragenkategorie aus.");
                 return;
             }
-            currentSelectedCategoryKey = selectedCategory;
-            socket.emit('startGame', { lobbyId: currentLobbyId, categoryKey: selectedCategory });
+            console.log(`[DEBUG] startGameLobbyBtn click - Emitting startGame with category: ${currentSelectedCategoryKey} (from dropdown: ${selectedCategoryFromDropdown})`);
+            socket.emit('startGame', { lobbyId: currentLobbyId, categoryKey: currentSelectedCategoryKey });
             startGameLobbyBtn.disabled = true;
         }
     });
 
-    leaveLobbyBtn.addEventListener('click', () => {
+    if(leaveLobbyBtn) leaveLobbyBtn.addEventListener('click', () => {
         playSound('click');
         stopMenuMusic();
         window.location.reload();
     });
 
-    playAgainHostBtn.addEventListener('click', () => {
+    if(playAgainHostBtn) playAgainHostBtn.addEventListener('click', () => {
         playSound('click');
         if (isHost && currentLobbyId) {
             socket.emit('playAgain', currentLobbyId);
@@ -309,85 +422,129 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
+    if (muteBtn) {
+        muteBtn.addEventListener('click', () => {
+            playSound('click'); // Play click sound before toggling mute state
+            toggleMute();
+        });
+    }
+
     // --- Socket.IO Event Handlers ---
+    // ... (socket event handlers like 'connect', 'disconnect', 'lobbyCreated', etc. remain largely the same as the previous version) ...
     socket.on('connect', () => {
-        console.log('Verbunden mit Server, ID:', socket.id);
-        createLobbyBtn.disabled = false;
-        joinLobbyBtn.disabled = false;
-        if (!lobbyConnectContainer.classList.contains('hidden') || !lobbyWaitingRoom.classList.contains('hidden')) {
+        console.log('[DEBUG] Connected to server with ID:', socket.id);
+        if(createLobbyBtn) createLobbyBtn.disabled = false;
+        if(joinLobbyBtn) joinLobbyBtn.disabled = false;
+        if (lobbyConnectContainer && !lobbyConnectContainer.classList.contains('hidden') ||
+            lobbyWaitingRoom && !lobbyWaitingRoom.classList.contains('hidden')) {
             startMenuMusic();
         }
     });
 
     socket.on('disconnect', (reason) => {
-        console.log('Vom Server getrennt:', reason);
+        console.log('[DEBUG] Vom Server getrennt:', reason);
         showGlobalNotification('Vom Server getrennt. Versuche erneut zu verbinden...', 'error', 5000);
         stopMenuMusic();
     });
 
     socket.on('lobbyCreated', (data) => {
-        console.log('Lobby created event received:', data);
+        console.log('[DEBUG] lobbyCreated event received from server:', JSON.stringify(data));
         currentLobbyId = data.lobbyId;
         currentPlayerId = data.playerId;
-        displayLobbyId.textContent = currentLobbyId;
-        updatePlayerList(data.players, data.availableCategories, null);
+        if(displayLobbyId) displayLobbyId.textContent = currentLobbyId;
+
+        allAvailableCategoriesCache = Array.isArray(data.availableCategories) ? [...data.availableCategories] : [];
+        console.log('[DEBUG] lobbyCreated - allAvailableCategoriesCache set to:', JSON.stringify(allAvailableCategoriesCache));
+
+        updatePlayerList(data.players, allAvailableCategoriesCache, null);
+
         showScreen(lobbyWaitingRoom);
-        connectErrorMsg.textContent = '';
-        console.log('Lobby erstellt:', data);
+        if(connectErrorMsg) connectErrorMsg.textContent = '';
     });
 
     socket.on('joinedLobby', (data) => {
-        console.log('Joined lobby event received:', data);
+        console.log('[DEBUG] joinedLobby event received:', JSON.stringify(data));
         currentLobbyId = data.lobbyId;
         currentPlayerId = data.playerId;
-        displayLobbyId.textContent = currentLobbyId;
+        if(displayLobbyId) displayLobbyId.textContent = currentLobbyId;
 
-        const me = data.players.find(p => p.id === currentPlayerId);
-        const categoriesForDisplay = (me && me.isHost) ? data.availableCategories : [];
+        allAvailableCategoriesCache = Array.isArray(data.allCategoriesForLobby) ? [...data.allCategoriesForLobby] : [];
+        console.log('[DEBUG] joinedLobby - allAvailableCategoriesCache set to:', JSON.stringify(allAvailableCategoriesCache));
 
-        updatePlayerList(data.players, categoriesForDisplay, data.selectedCategory);
+        updatePlayerList(data.players, allAvailableCategoriesCache, data.selectedCategory);
         showScreen(lobbyWaitingRoom);
-        connectErrorMsg.textContent = '';
-        console.log('Lobby beigetreten:', data);
-        playSound('playerJoined');
+        if(connectErrorMsg) connectErrorMsg.textContent = '';
 
         if (data.gameState === 'active') {
-            lobbyMessage.textContent = "Spiel beigetreten. Warte auf nächste Frage.";
+            if(lobbyMessage) lobbyMessage.textContent = "Spiel beigetreten. Warte auf nächste Frage.";
             stopMenuMusic();
-            if (data.selectedCategory) {
+            if (gameCategoryDisplay && data.selectedCategory) {
                 gameCategoryDisplay.textContent = data.selectedCategory;
             }
         }
     });
 
+    socket.on('categoryUpdatedByHost', (categoryKey) => {
+        console.log('[DEBUG] categoryUpdatedByHost received:', categoryKey);
+        currentSelectedCategoryKey = categoryKey;
+
+        if (categorySelect && categorySelect.options.length > 0) {
+            categorySelect.value = categoryKey || "";
+        } else if (categorySelect) {
+            console.warn("[DEBUG] categoryUpdatedByHost: categorySelect has no options, cannot set value.");
+        }
+
+        if (categoryKey) {
+            if(currentCategoryText) currentCategoryText.textContent = categoryKey;
+            if(chosenCategoryDisplay) chosenCategoryDisplay.classList.remove('hidden');
+        } else {
+            if(currentCategoryText) currentCategoryText.textContent = "";
+            if(chosenCategoryDisplay) chosenCategoryDisplay.classList.add('hidden');
+        }
+
+        if (isHost && startGameLobbyBtn) {
+            const playerCount = playerListLobby ? playerListLobby.children.length : 0;
+            startGameLobbyBtn.disabled = !currentSelectedCategoryKey || playerCount < 1;
+        }
+        console.log('[DEBUG] categoryUpdatedByHost - UI updated for category:', categoryKey);
+    });
+
     socket.on('lobbyError', (message) => {
         displayError(connectErrorMsg, message);
-        createLobbyBtn.disabled = false;
-        joinLobbyBtn.disabled = false;
-        console.error('Lobby Fehler:', message);
+        if(createLobbyBtn) createLobbyBtn.disabled = false;
+        if(joinLobbyBtn) joinLobbyBtn.disabled = false;
+        console.error('[DEBUG] Lobby Fehler:', message);
+    });
+
+    socket.on('startGameError', (message) => {
+        displayError(startGameErrorMsg, message);
+        if (isHost && startGameLobbyBtn) {
+            startGameLobbyBtn.disabled = false;
+        }
+        console.error('[DEBUG] Start Game Error:', message);
     });
 
     socket.on('playerJoined', (data) => {
-        console.log('Player joined event:', data);
-        const currentCategories = isHost ? (categorySelect.options.length > 0 ? Array.from(categorySelect.options).map(opt => opt.value).filter(v => v !== "") : []) : [];
-        updatePlayerList(data.players, currentCategories, categorySelect.value);
+        console.log('[DEBUG] playerJoined event received (another player):', JSON.stringify(data));
+        allAvailableCategoriesCache = Array.isArray(data.allCategoriesForLobby) ? [...data.allCategoriesForLobby] : allAvailableCategoriesCache;
+        updatePlayerList(data.players, allAvailableCategoriesCache, data.selectedCategory);
 
-        if (data.players.length > 0 && data.players[data.players.length-1].id !== currentPlayerId) {
+        if (data.joinedPlayerId !== currentPlayerId) {
             playSound('playerJoined');
+            showGlobalNotification(`${data.joinedPlayerName} ist der Lobby beigetreten.`, 'info', 2000);
         }
-        showGlobalNotification(`${data.players[data.players.length-1].name} ist der Lobby beigetreten.`, 'info', 2000);
     });
 
     socket.on('playerLeft', (data) => {
-        console.log('Player left event:', data);
-        const currentCategories = isHost ? (categorySelect.options.length > 0 ? Array.from(categorySelect.options).map(opt => opt.value).filter(v => v !== "") : []) : [];
-        updatePlayerList(data.players, currentCategories, categorySelect.value);
+        console.log('[DEBUG] playerLeft event received:', JSON.stringify(data));
+        updatePlayerList(data.players, allAvailableCategoriesCache, data.selectedCategory);
         showGlobalNotification(`${data.disconnectedPlayerName} hat die Lobby verlassen.`, 'info', 2000);
     });
 
     socket.on('hostChanged', (data) => {
-        console.log('Host changed event:', data);
-        updatePlayerList(data.players, data.availableCategories, categorySelect.value);
+        console.log('[DEBUG] hostChanged event received:', JSON.stringify(data));
+        allAvailableCategoriesCache = Array.isArray(data.availableCategories) ? [...data.availableCategories] : [];
+        updatePlayerList(data.players, allAvailableCategoriesCache, data.selectedCategory);
         const newHost = data.players.find(p => p.id === data.newHostId);
         if (newHost) {
             showGlobalNotification(`${newHost.name} ist jetzt der Host.`, 'info', 3000);
@@ -395,10 +552,10 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     socket.on('gameStarted', (data) => {
-        console.log('Spiel startet!', data);
+        console.log('[DEBUG] gameStarted event received:', JSON.stringify(data));
         stopMenuMusic();
         playSound('gameStart');
-        gameCategoryDisplay.textContent = data.category || "Unbekannt";
+        if(gameCategoryDisplay) gameCategoryDisplay.textContent = data.category || "Unbekannt";
         showScreen(quizContainer);
     });
 
@@ -406,112 +563,123 @@ document.addEventListener('DOMContentLoaded', () => {
         playSound('newQuestion');
         currentQuestionIndex = data.questionIndex;
         questionTimeLimit = data.timeLimit;
-        gameCategoryDisplay.textContent = data.category || currentSelectedCategoryKey || "Unbekannt";
+        if(gameCategoryDisplay) gameCategoryDisplay.textContent = data.category || currentSelectedCategoryKey || "Unbekannt";
 
-        questionText.textContent = data.question;
-        questionCounter.textContent = `F: ${data.questionIndex + 1}/${data.totalQuestions}`;
+        if(questionText) questionText.textContent = data.question;
+        if(questionCounter) questionCounter.textContent = `F: ${data.questionIndex + 1}/${data.totalQuestions}`;
 
-        const myPlayerData = quizContainer.dataset.players ? JSON.parse(quizContainer.dataset.players) : [];
+        const myPlayerData = quizContainer && quizContainer.dataset.players ? JSON.parse(quizContainer.dataset.players) : [];
         const myPlayer = myPlayerData.find(p=>p.id === currentPlayerId);
 
-        if (myPlayer) {
-            playerInfoQuiz.textContent = `${myPlayer.name} (Punkte: ${myPlayer.score || 0})`;
-        } else {
-            const nameFromInput = playerNameInput.value.trim() || 'Du';
-            playerInfoQuiz.textContent = `${nameFromInput} (Punkte: ...)`;
+        if (playerInfoQuiz) {
+            if (myPlayer) {
+                playerInfoQuiz.textContent = `${myPlayer.name} (Punkte: ${myPlayer.score || 0})`;
+            } else {
+                const nameFromInput = playerNameInput ? playerNameInput.value.trim() || 'Du' : 'Du';
+                playerInfoQuiz.textContent = `${nameFromInput} (Punkte: ...)`;
+            }
         }
 
-        optionsContainer.innerHTML = '';
-        data.options.forEach(optionText => {
-            const button = document.createElement('button');
-            button.textContent = optionText;
-            button.classList.add('option-btn');
-            button.addEventListener('click', () => {
-                playSound('click');
-                optionsContainer.querySelectorAll('.option-btn').forEach(btn => {
-                    btn.disabled = true;
-                    btn.classList.remove('selected');
+        if(optionsContainer) {
+            optionsContainer.innerHTML = '';
+            data.options.forEach(optionText => {
+                const button = document.createElement('button');
+                button.textContent = optionText;
+                button.classList.add('option-btn');
+                button.addEventListener('click', () => {
+                    playSound('click');
+                    optionsContainer.querySelectorAll('.option-btn').forEach(btn => {
+                        btn.disabled = true;
+                        btn.classList.remove('selected');
+                    });
+                    button.classList.add('selected');
+                    socket.emit('submitAnswer', {
+                        lobbyId: currentLobbyId,
+                        questionIndex: currentQuestionIndex,
+                        answer: optionText
+                    });
+                    if(feedbackText) feedbackText.textContent = "Warte auf andere Spieler oder Timer...";
+                    if(waitingForOthersMsg) waitingForOthersMsg.textContent = "Deine Antwort wurde übermittelt!";
                 });
-                button.classList.add('selected');
-                socket.emit('submitAnswer', {
-                    lobbyId: currentLobbyId,
-                    questionIndex: currentQuestionIndex,
-                    answer: optionText
-                });
-                feedbackText.textContent = "Warte auf andere Spieler oder Timer...";
-                waitingForOthersMsg.textContent = "Deine Antwort wurde übermittelt!";
+                optionsContainer.appendChild(button);
             });
-            optionsContainer.appendChild(button);
-        });
-        feedbackText.textContent = '';
-        waitingForOthersMsg.textContent = '';
-        timerDisplay.textContent = `${questionTimeLimit}s`;
-        timerDisplay.classList.remove('text-red-500', 'text-amber-400');
-        timerDisplay.classList.add('text-amber-400');
+        }
+        if(feedbackText) feedbackText.textContent = '';
+        if(waitingForOthersMsg) waitingForOthersMsg.textContent = '';
+        if(timerDisplay) {
+            timerDisplay.textContent = `${questionTimeLimit}s`;
+            timerDisplay.classList.remove('text-red-500', 'text-amber-400');
+            timerDisplay.classList.add('text-amber-400');
+        }
     });
 
     socket.on('updateScores', (playersScoreData) => {
-        quizContainer.dataset.players = JSON.stringify(playersScoreData);
-        playerListLobby.dataset.players = JSON.stringify(playersScoreData);
-
+        if(quizContainer) quizContainer.dataset.players = JSON.stringify(playersScoreData);
         updateLiveScores(playersScoreData);
         const me = playersScoreData.find(p => p.id === currentPlayerId);
-        if (me) {
+        if (me && playerInfoQuiz) {
             playerInfoQuiz.textContent = `${me.name} (Punkte: ${me.score})`;
         }
     });
 
     socket.on('timerUpdate', (timeLeft) => {
+        if(!timerDisplay) return;
         timerDisplay.textContent = `${timeLeft}s`;
         if (timeLeft <= 5 && timeLeft > 0) {
             timerDisplay.classList.remove('text-amber-400');
             timerDisplay.classList.add('text-red-500');
         } else if (timeLeft === 0) {
             timerDisplay.classList.add('text-red-500');
-            feedbackText.textContent = "Zeit abgelaufen!";
-            waitingForOthersMsg.textContent = "Antwort wird aufgedeckt...";
-            optionsContainer.querySelectorAll('.option-btn').forEach(btn => btn.disabled = true);
+            if(feedbackText) feedbackText.textContent = "Zeit abgelaufen!";
+            if(waitingForOthersMsg) waitingForOthersMsg.textContent = "Antwort wird aufgedeckt...";
+            if(optionsContainer) optionsContainer.querySelectorAll('.option-btn').forEach(btn => btn.disabled = true);
         }
     });
 
     socket.on('answerResult', (data) => {
-        const selectedButton = Array.from(optionsContainer.querySelectorAll('.option-btn')).find(btn => btn.classList.contains('selected'));
+        const selectedButton = optionsContainer ? Array.from(optionsContainer.querySelectorAll('.option-btn')).find(btn => btn.classList.contains('selected')) : null;
 
         if (data.isCorrect) {
             playSound('correctAnswer');
             if (data.streak > 1) {
                 setTimeout(() => playSound('streak'), 200);
             }
-            feedbackText.textContent = `Richtig! +${data.pointsEarned} Punkte.`;
-            feedbackText.className = 'text-lg font-medium text-green-400';
+            if(feedbackText) {
+                feedbackText.textContent = `Richtig! +${data.pointsEarned} Punkte.`;
+                feedbackText.className = 'text-lg font-medium text-green-400';
+            }
             if(selectedButton) selectedButton.classList.add('correct');
         } else {
             playSound('incorrectAnswer');
-            feedbackText.textContent = `Falsch. Die Antwort war ${data.correctAnswer}.`;
-            feedbackText.className = 'text-lg font-medium text-red-400';
+            if(feedbackText) {
+                feedbackText.textContent = `Falsch. Die Antwort war ${data.correctAnswer}.`;
+                feedbackText.className = 'text-lg font-medium text-red-400';
+            }
             if(selectedButton) selectedButton.classList.add('incorrect-picked');
         }
 
-        const myPlayerData = quizContainer.dataset.players ? JSON.parse(quizContainer.dataset.players) : [];
+        const myPlayerData = quizContainer && quizContainer.dataset.players ? JSON.parse(quizContainer.dataset.players) : [];
         const me = myPlayerData.find(p => p.id === currentPlayerId);
-        if (me) {
+        if (me && playerInfoQuiz) {
             me.score = data.score;
             me.streak = data.streak;
             playerInfoQuiz.textContent = `${me.name} (Punkte: ${me.score})`;
         }
-        waitingForOthersMsg.textContent = "Warte auf Ergebnisse...";
+        if(waitingForOthersMsg) waitingForOthersMsg.textContent = "Warte auf Ergebnisse...";
     });
 
     socket.on('questionOver', (data) => {
-        if (timerDisplay.textContent === "0s") {
+        if (timerDisplay && timerDisplay.textContent === "0s") {
             playSound('timesUp');
         }
 
-        feedbackText.textContent = `Die richtige Antwort war: ${data.correctAnswer}`;
-        feedbackText.className = 'text-lg font-medium text-sky-300';
-        waitingForOthersMsg.textContent = "Nächste Frage kommt...";
+        if(feedbackText) {
+            feedbackText.textContent = `Die richtige Antwort war: ${data.correctAnswer}`;
+            feedbackText.className = 'text-lg font-medium text-sky-300';
+        }
+        if(waitingForOthersMsg) waitingForOthersMsg.textContent = "Nächste Frage kommt...";
 
-        optionsContainer.querySelectorAll('.option-btn').forEach(btn => {
+        if(optionsContainer) optionsContainer.querySelectorAll('.option-btn').forEach(btn => {
             btn.disabled = true;
             if (btn.textContent === data.correctAnswer) {
                 if (!btn.classList.contains('correct')) {
@@ -524,59 +692,59 @@ document.addEventListener('DOMContentLoaded', () => {
 
     socket.on('gameOver', (data) => {
         stopMenuMusic();
-        finalScoresDiv.innerHTML = '';
-        data.finalScores.forEach((player, index) => {
-            const scoreEntry = document.createElement('div');
-            scoreEntry.className = 'final-score-entry';
-            let medal = '';
-            if (index === 0) medal = '🥇 ';
-            else if (index === 1) medal = '🥈 ';
-            else if (index === 2) medal = '🥉 ';
+        if(finalScoresDiv) {
+            finalScoresDiv.innerHTML = '';
+            data.finalScores.forEach((player, index) => {
+                const scoreEntry = document.createElement('div');
+                scoreEntry.className = 'final-score-entry';
+                let medal = '';
+                if (index === 0) medal = '🥇 ';
+                else if (index === 1) medal = '🥈 ';
+                else if (index === 2) medal = '🥉 ';
 
-            let displayName = player.name;
-            const myPlayerData = quizContainer.dataset.players ? JSON.parse(quizContainer.dataset.players) : [];
-            const me = myPlayerData.find(p => p.id === currentPlayerId);
-            if (me && player.name === me.name) {
-                displayName += " (Du)";
-            }
-
-            scoreEntry.innerHTML = `<span>${medal}${displayName}</span><span>${player.score} Pkt</span>`;
-            finalScoresDiv.appendChild(scoreEntry);
-        });
+                let displayName = player.name;
+                if (player.originalId === currentPlayerId) {
+                    displayName += " (Du)";
+                }
+                scoreEntry.innerHTML = `<span>${medal}${displayName}</span><span>${player.score} Pkt</span>`;
+                finalScoresDiv.appendChild(scoreEntry);
+            });
+        }
 
         if (isHost) {
-            playAgainHostBtn.classList.remove('hidden');
-            playAgainHostBtn.disabled = false;
-            waitingForHostPlayAgainBtn.classList.add('hidden');
+            if(playAgainHostBtn) playAgainHostBtn.classList.remove('hidden');
+            if(playAgainHostBtn) playAgainHostBtn.disabled = false;
+            if(waitingForHostPlayAgainBtn) waitingForHostPlayAgainBtn.classList.add('hidden');
         } else {
-            playAgainHostBtn.classList.add('hidden');
-            waitingForHostPlayAgainBtn.classList.remove('hidden');
+            if(playAgainHostBtn) playAgainHostBtn.classList.add('hidden');
+            if(waitingForHostPlayAgainBtn) waitingForHostPlayAgainBtn.classList.remove('hidden');
         }
         showScreen(gameOverContainer);
         startMenuMusic();
     });
 
     socket.on('lobbyResetForPlayAgain', (data) => {
-        console.log('Lobby reset for play again:', data);
+        console.log('[DEBUG] lobbyResetForPlayAgain received:', JSON.stringify(data));
         currentLobbyId = data.lobbyId;
-        updatePlayerList(data.players, data.availableCategories, data.selectedCategory);
+        allAvailableCategoriesCache = Array.isArray(data.availableCategories) ? [...data.availableCategories] : [];
+        updatePlayerList(data.players, allAvailableCategoriesCache, data.selectedCategory);
         showScreen(lobbyWaitingRoom);
-        lobbyMessage.textContent = isHost ? "Spiel zurückgesetzt. Wähle Kategorie und starte!" : "Host hat das Spiel zurückgesetzt. Warte auf Start...";
-        startGameLobbyBtn.disabled = !isHost || !categorySelect.value;
-        playAgainHostBtn.disabled = false;
-        console.log('Lobby zurückgesetzt für neues Spiel:', data);
+        if(lobbyMessage) lobbyMessage.textContent = isHost ? "Spiel zurückgesetzt. Wähle Kategorie und starte!" : "Host hat das Spiel zurückgesetzt. Warte auf Start...";
+        if(startGameLobbyBtn) startGameLobbyBtn.disabled = !isHost || !categorySelect.value;
+        if(playAgainHostBtn) playAgainHostBtn.disabled = false;
     });
 
     // Initial setup
     showScreen(lobbyConnectContainer);
+    updateMuteButtonAppearance(); // Set initial mute button text and style
     const savedPlayerName = localStorage.getItem('quizPlayerName');
-    if (savedPlayerName) {
+    if (savedPlayerName && playerNameInput) {
         playerNameInput.value = savedPlayerName;
     }
-    playerNameInput.addEventListener('input', () => {
+    if(playerNameInput) playerNameInput.addEventListener('input', () => {
         localStorage.setItem('quizPlayerName', playerNameInput.value);
     });
-    lobbyIdInput.addEventListener('input', () => {
+    if(lobbyIdInput) lobbyIdInput.addEventListener('input', () => {
         lobbyIdInput.value = lobbyIdInput.value.toUpperCase();
     });
 });
