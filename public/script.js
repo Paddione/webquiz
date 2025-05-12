@@ -16,27 +16,25 @@ document.addEventListener('DOMContentLoaded', () => {
     const displayLobbyId = document.getElementById('display-lobby-id');
     const copyLobbyIdBtn = document.getElementById('copy-lobby-id-btn');
     const playerListLobby = document.getElementById('player-list-lobby');
-    const categorySelectionContainer = document.getElementById('category-selection-container'); // Element für Kategorienauswahl
-    const categorySelect = document.getElementById('category-select'); // Das Select-Element selbst
+    const categorySelectionContainer = document.getElementById('category-selection-container');
+    const categorySelect = document.getElementById('category-select');
     const chosenCategoryDisplay = document.getElementById('chosen-category-display');
     const currentCategoryText = document.getElementById('current-category-text');
     const lobbyMessage = document.getElementById('lobby-message');
     const startGameLobbyBtn = document.getElementById('start-game-lobby-btn');
     const startGameErrorMsg = document.getElementById('start-game-error-msg');
 
-
     // Quiz Game Screen
     const quizContainer = document.getElementById('quiz-container');
     const playerInfoQuiz = document.getElementById('player-info-quiz');
     const questionCounter = document.getElementById('question-counter');
-    const gameCategoryDisplay = document.getElementById('game-category-display'); // Für Anzeige der Kategorie im Spiel
+    const gameCategoryDisplay = document.getElementById('game-category-display');
     const timerDisplay = document.getElementById('timer');
     const questionText = document.getElementById('question-text');
     const optionsContainer = document.getElementById('options-container');
     const feedbackText = document.getElementById('feedback-text');
     const liveScoresList = document.getElementById('live-scores-list');
     const waitingForOthersMsg = document.getElementById('waiting-for-others-msg');
-
 
     // Game Over Screen
     const gameOverContainer = document.getElementById('game-over-container');
@@ -54,10 +52,9 @@ document.addEventListener('DOMContentLoaded', () => {
     let currentQuestionIndex = -1;
     let isHost = false;
     let questionTimeLimit = 15;
-    let currentSelectedCategoryKey = null; // Speichert die aktuell vom Host gewählte Kategorie
+    let currentSelectedCategoryKey = null;
 
     // --- Sound Effects ---
-    // (Sound-Logik bleibt wie zuvor)
     const sounds = {
         click: new Audio('/sounds/click.mp3'),
         correctAnswer: new Audio('/sounds/correctanswer.mp3'),
@@ -112,10 +109,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function showGlobalNotification(message, type = 'error', duration = 3000) {
         globalNotification.textContent = message;
-        globalNotification.className = 'fixed top-5 right-5 p-4 rounded-lg shadow-xl text-sm z-50 animate-pulse'; // Reset classes
+        globalNotification.className = 'fixed top-5 right-5 p-4 rounded-lg shadow-xl text-sm z-50 animate-pulse';
         if (type === 'error') globalNotification.classList.add('bg-red-500', 'text-white');
         else if (type === 'success') globalNotification.classList.add('bg-green-500', 'text-white');
-        else globalNotification.classList.add('bg-sky-500', 'text-white'); // Info
+        else globalNotification.classList.add('bg-sky-500', 'text-white');
 
         globalNotification.classList.remove('hidden');
         setTimeout(() => {
@@ -123,48 +120,57 @@ document.addEventListener('DOMContentLoaded', () => {
         }, duration);
     }
 
-    // NEU: Funktion zum Füllen des Kategorie-Dropdowns
+    // Fixed function to populate category selector
     function populateCategorySelector(categories, selectedCategoryKey = null) {
-        categorySelect.innerHTML = ''; // Alte Optionen löschen
+        categorySelect.innerHTML = '';
+
+        console.log('Populating category selector with:', categories, 'Selected:', selectedCategoryKey);
+
         if (!categories || categories.length === 0) {
             const option = document.createElement('option');
             option.value = "";
             option.textContent = "Keine Kategorien verfügbar";
             categorySelect.appendChild(option);
             categorySelect.disabled = true;
-            startGameLobbyBtn.disabled = true; // Spielstart verhindern
+            console.warn('No categories available for dropdown');
             return;
         }
+
+        // Add a default "Choose category" option
+        const defaultOption = document.createElement('option');
+        defaultOption.value = "";
+        defaultOption.textContent = "-- Kategorie auswählen --";
+        defaultOption.disabled = true;
+        categorySelect.appendChild(defaultOption);
 
         categories.forEach(categoryKey => {
             const option = document.createElement('option');
             option.value = categoryKey;
-            option.textContent = categoryKey; // Zeigt den Kategorienamen an
+            option.textContent = categoryKey;
             if (selectedCategoryKey && categoryKey === selectedCategoryKey) {
                 option.selected = true;
             }
             categorySelect.appendChild(option);
         });
+
         categorySelect.disabled = false;
 
-        // Setze currentSelectedCategoryKey basierend auf der Auswahl oder dem ersten Element
+        // Set currentSelectedCategoryKey based on selection
         if (selectedCategoryKey && categories.includes(selectedCategoryKey)) {
             currentSelectedCategoryKey = selectedCategoryKey;
             categorySelect.value = selectedCategoryKey;
-        } else if (categories.length > 0) {
-            currentSelectedCategoryKey = categories[0];
-            categorySelect.value = currentSelectedCategoryKey;
         } else {
             currentSelectedCategoryKey = null;
+            categorySelect.value = "";
         }
-        handleCategoryChange(); // Aktualisiere die Anzeige und den Button-Status
+
+        handleCategoryChange();
     }
 
-    // NEU: Funktion, die auf Änderungen im Kategorie-Dropdown reagiert
+    // Fixed function to handle category changes
     function handleCategoryChange() {
         if (isHost) {
-            currentSelectedCategoryKey = categorySelect.value;
-            startGameLobbyBtn.disabled = !currentSelectedCategoryKey; // Deaktiviere Start, wenn keine Kategorie gewählt
+            currentSelectedCategoryKey = categorySelect.value || null;
 
             if (currentSelectedCategoryKey) {
                 chosenCategoryDisplay.classList.remove('hidden');
@@ -173,11 +179,17 @@ document.addEventListener('DOMContentLoaded', () => {
                 chosenCategoryDisplay.classList.add('hidden');
                 currentCategoryText.textContent = "";
             }
+
+            // Update start button state
+            const playerCount = playerListLobby.children.length;
+            startGameLobbyBtn.disabled = !currentSelectedCategoryKey || playerCount < 1;
         }
     }
 
-    // ANGEPASST: updatePlayerList nimmt jetzt Kategorien entgegen
+    // Fixed updatePlayerList function
     function updatePlayerList(players, hostCategories = [], currentCatFromServer = null) {
+        console.log('Updating player list:', players.length, 'players, Categories:', hostCategories, 'Current cat:', currentCatFromServer);
+
         playerListLobby.innerHTML = '';
         players.forEach(player => {
             const playerDiv = document.createElement('div');
@@ -193,17 +205,27 @@ document.addEventListener('DOMContentLoaded', () => {
             isHost = me.isHost;
 
             if (isHost) {
-                categorySelectionContainer.classList.remove('hidden'); // Container sichtbar machen
-                populateCategorySelector(hostCategories, currentCatFromServer || currentSelectedCategoryKey); // Dropdown füllen
-                lobbyMessage.textContent = players.length > 0 ? "Du bist der Host. Wähle eine Kategorie und starte das Spiel." : "Warte auf Spieler...";
+                categorySelectionContainer.classList.remove('hidden');
+
+                if (hostCategories && hostCategories.length > 0) {
+                    populateCategorySelector(hostCategories, currentCatFromServer || currentSelectedCategoryKey);
+                } else {
+                    console.error('Host has no categories available');
+                    categorySelect.innerHTML = '<option value="">Keine Kategorien verfügbar</option>';
+                    categorySelect.disabled = true;
+                }
+
+                lobbyMessage.textContent = "Du bist der Host. Wähle eine Kategorie und starte das Spiel.";
                 startGameLobbyBtn.classList.remove('hidden');
-                startGameLobbyBtn.disabled = players.length < 1 || !categorySelect.value; // Spielstart abhängig von Spielern UND Kategorie
-                handleCategoryChange(); // Stellt sicher, dass die Anzeige aktuell ist
+
+                const hasCategory = categorySelect.value && categorySelect.value !== "";
+                startGameLobbyBtn.disabled = players.length < 1 || !hasCategory;
             } else {
-                categorySelectionContainer.classList.add('hidden'); // Container für Nicht-Hosts ausblenden
+                categorySelectionContainer.classList.add('hidden');
                 startGameLobbyBtn.classList.add('hidden');
                 lobbyMessage.textContent = "Warte, bis der Host das Spiel startet...";
-                if(currentCatFromServer){ // Zeige die vom Host gewählte Kategorie an
+
+                if (currentCatFromServer) {
                     chosenCategoryDisplay.classList.remove('hidden');
                     currentCategoryText.textContent = currentCatFromServer;
                 } else {
@@ -257,19 +279,17 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // NEU: Event Listener für das Kategorie-Dropdown
     categorySelect.addEventListener('change', handleCategoryChange);
 
-    // ANGEPASST: startGameLobbyBtn sendet jetzt die ausgewählte Kategorie
     startGameLobbyBtn.addEventListener('click', () => {
         playSound('click');
         if (isHost && currentLobbyId) {
-            const selectedCategory = categorySelect.value; // Hole Wert aus dem Dropdown
+            const selectedCategory = categorySelect.value;
             if (!selectedCategory) {
                 displayError(startGameErrorMsg, "Bitte wähle eine Fragenkategorie aus.");
                 return;
             }
-            currentSelectedCategoryKey = selectedCategory; // Update global state
+            currentSelectedCategoryKey = selectedCategory;
             socket.emit('startGame', { lobbyId: currentLobbyId, categoryKey: selectedCategory });
             startGameLobbyBtn.disabled = true;
         }
@@ -305,36 +325,37 @@ document.addEventListener('DOMContentLoaded', () => {
         stopMenuMusic();
     });
 
-    // ANGEPASST: lobbyCreated erhält 'availableCategories'
     socket.on('lobbyCreated', (data) => {
+        console.log('Lobby created event received:', data);
         currentLobbyId = data.lobbyId;
         currentPlayerId = data.playerId;
         displayLobbyId.textContent = currentLobbyId;
-        updatePlayerList(data.players, data.availableCategories, null); // Kategorien an updatePlayerList übergeben
+        updatePlayerList(data.players, data.availableCategories, null);
         showScreen(lobbyWaitingRoom);
         connectErrorMsg.textContent = '';
         console.log('Lobby erstellt:', data);
     });
 
-    // ANGEPASST: joinedLobby erhält 'availableCategories' (für den Fall, dass der Host neu verbindet) und 'selectedCategory'
     socket.on('joinedLobby', (data) => {
+        console.log('Joined lobby event received:', data);
         currentLobbyId = data.lobbyId;
         currentPlayerId = data.playerId;
         displayLobbyId.textContent = currentLobbyId;
-        // 'availableCategories' nur an updatePlayerList übergeben, wenn der Spieler auch Host ist.
-        // 'selectedCategory' wird übergeben, um es Nicht-Hosts anzuzeigen.
-        updatePlayerList(data.players, data.isHost ? data.availableCategories : [], data.selectedCategory);
+
+        const me = data.players.find(p => p.id === currentPlayerId);
+        const categoriesForDisplay = (me && me.isHost) ? data.availableCategories : [];
+
+        updatePlayerList(data.players, categoriesForDisplay, data.selectedCategory);
         showScreen(lobbyWaitingRoom);
         connectErrorMsg.textContent = '';
         console.log('Lobby beigetreten:', data);
         playSound('playerJoined');
+
         if (data.gameState === 'active') {
             lobbyMessage.textContent = "Spiel beigetreten. Warte auf nächste Frage.";
             stopMenuMusic();
             if (data.selectedCategory) {
-                chosenCategoryDisplay.classList.remove('hidden');
-                currentCategoryText.textContent = data.selectedCategory;
-                categorySelectionContainer.classList.add('hidden'); // Für Nicht-Hosts ausblenden
+                gameCategoryDisplay.textContent = data.selectedCategory;
             }
         }
     });
@@ -347,9 +368,10 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     socket.on('playerJoined', (data) => {
-        // Beim Beitreten eines Spielers die Kategorienliste für den Host beibehalten/aktualisieren
-        const currentCategoriesForHost = isHost ? (categorySelect.options.length > 0 ? Array.from(categorySelect.options).map(opt => opt.value) : []) : [];
-        updatePlayerList(data.players, currentCategoriesForHost, categorySelect.value);
+        console.log('Player joined event:', data);
+        const currentCategories = isHost ? (categorySelect.options.length > 0 ? Array.from(categorySelect.options).map(opt => opt.value).filter(v => v !== "") : []) : [];
+        updatePlayerList(data.players, currentCategories, categorySelect.value);
+
         if (data.players.length > 0 && data.players[data.players.length-1].id !== currentPlayerId) {
             playSound('playerJoined');
         }
@@ -357,14 +379,14 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     socket.on('playerLeft', (data) => {
-        const currentCategoriesForHost = isHost ? (categorySelect.options.length > 0 ? Array.from(categorySelect.options).map(opt => opt.value) : []) : [];
-        updatePlayerList(data.players, currentCategoriesForHost, categorySelect.value);
+        console.log('Player left event:', data);
+        const currentCategories = isHost ? (categorySelect.options.length > 0 ? Array.from(categorySelect.options).map(opt => opt.value).filter(v => v !== "") : []) : [];
+        updatePlayerList(data.players, currentCategories, categorySelect.value);
         showGlobalNotification(`${data.disconnectedPlayerName} hat die Lobby verlassen.`, 'info', 2000);
     });
 
-    // ANGEPASST: hostChanged erhält 'availableCategories'
     socket.on('hostChanged', (data) => {
-        // Wenn ein neuer Host ernannt wird, muss dieser die Kategorienliste erhalten.
+        console.log('Host changed event:', data);
         updatePlayerList(data.players, data.availableCategories, categorySelect.value);
         const newHost = data.players.find(p => p.id === data.newHostId);
         if (newHost) {
@@ -372,21 +394,19 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // ANGEPASST: gameStarted erhält 'category'
     socket.on('gameStarted', (data) => {
         console.log('Spiel startet!', data);
         stopMenuMusic();
         playSound('gameStart');
-        gameCategoryDisplay.textContent = data.category || "Unbekannt"; // Kategorie im Spiel anzeigen
+        gameCategoryDisplay.textContent = data.category || "Unbekannt";
         showScreen(quizContainer);
     });
 
-    // ANGEPASST: newQuestion erhält 'category'
     socket.on('newQuestion', (data) => {
         playSound('newQuestion');
         currentQuestionIndex = data.questionIndex;
         questionTimeLimit = data.timeLimit;
-        gameCategoryDisplay.textContent = data.category || currentSelectedCategoryKey || "Unbekannt"; // Kategorie im Spiel anzeigen
+        gameCategoryDisplay.textContent = data.category || currentSelectedCategoryKey || "Unbekannt";
 
         questionText.textContent = data.question;
         questionCounter.textContent = `F: ${data.questionIndex + 1}/${data.totalQuestions}`;
@@ -536,10 +556,9 @@ document.addEventListener('DOMContentLoaded', () => {
         startMenuMusic();
     });
 
-    // ANGEPASST: lobbyResetForPlayAgain erhält 'availableCategories' und 'selectedCategory'
     socket.on('lobbyResetForPlayAgain', (data) => {
+        console.log('Lobby reset for play again:', data);
         currentLobbyId = data.lobbyId;
-        // Beim Zurücksetzen die Kategorienliste und die zuvor gewählte Kategorie an updatePlayerList übergeben
         updatePlayerList(data.players, data.availableCategories, data.selectedCategory);
         showScreen(lobbyWaitingRoom);
         lobbyMessage.textContent = isHost ? "Spiel zurückgesetzt. Wähle Kategorie und starte!" : "Host hat das Spiel zurückgesetzt. Warte auf Start...";
@@ -560,5 +579,4 @@ document.addEventListener('DOMContentLoaded', () => {
     lobbyIdInput.addEventListener('input', () => {
         lobbyIdInput.value = lobbyIdInput.value.toUpperCase();
     });
-
 });
