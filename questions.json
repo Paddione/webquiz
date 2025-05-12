@@ -1,0 +1,914 @@
+{
+  "Grundlagen moderner Computernetze": [
+    {
+      "question": "Was ist ein Computernetz?",
+      "options": [
+        "Ein System zur Speicherung von Daten.",
+        "Eine Verbindung von Computern zur Nutzung gemeinsamer Ressourcen und zum Datenaustausch.",
+        "Ein einzelner Computer zur Informationsverarbeitung.",
+        "Eine Software zur Simulation von Kommunikation."
+      ],
+      "answer": "Eine Verbindung von Computern zur Nutzung gemeinsamer Ressourcen und zum Datenaustausch."
+    },
+    {
+      "question": "Was versteht man im Kontext von Computernetzen unter 'Broadcast'?",
+      "options": [
+        "Die Zustellung einer Sendung an einen einzelnen Host.",
+        "Die Zustellung einer Sendung an alle erreichbaren Hosts eines Netzes.",
+        "Eine direkte Verbindung zwischen zwei Hosts.",
+        "Das Versenden von Datenpaketen über das Internet."
+      ],
+      "answer": "Die Zustellung einer Sendung an alle erreichbaren Hosts eines Netzes."
+    },
+    {
+      "question": "Wodurch wird die 'Übertragungsart' (Betriebsart) laut den Quellen bestimmt?",
+      "options": [
+        "Durch die Anzahl der Kommunikationsteilnehmer.",
+        "Durch die Richtung des Informationsflusses.",
+        "Durch die Übertragungsrate.",
+        "Durch die Entfernung zwischen Kommunikationspartnern."
+      ],
+      "answer": "Durch die Richtung des Informationsflusses."
+    },
+    {
+      "question": "Was misst ein tracert-Tool laut ITI21?",
+      "options": [
+        "Die Netzwerkauslastung.",
+        "Die Anzahl der Kommunikationsteilnehmer.",
+        "Die Route zu einem Ziel und ggf. geografische Informationen.",
+        "Die Übertragungsart."
+      ],
+      "answer": "Die Route zu einem Ziel und ggf. geografische Informationen."
+    },
+    {
+      "question": "Welches Volumen kann ein Kanal mit einer Latenz von 100 ms und einer Übertragungsrate von 10 Mbit/s aufnehmen?",
+      "options": [
+        "100 Mbit.",
+        "1 Mbit.",
+        "10 Mbit.",
+        "0.1 Mbit."
+      ],
+      "answer": "1 Mbit."
+    },
+    {
+      "question": "Was ist im Standard IEEE 802.1Q zusammengefasst?",
+      "options": [
+        "Sicherheitsmechanismen für WLANs.",
+        "Verfahren zur IP-Adressierung.",
+        "Ergebnisse zur Priorisierung der Übertragung in IP-Netzen.",
+        "Definitionen für Glasfaserkabel."
+      ],
+      "answer": "Ergebnisse zur Priorisierung der Übertragung in IP-Netzen."
+    },
+    {
+      "question": "Welche Anwendung sollte laut Quelle mit hoher Priorität übertragen werden, um Latenz und Jitter zu minimieren?",
+      "options": [
+        "E-Mail-Übertragung.",
+        "Datei-Downloads.",
+        "Voice over IP.",
+        "Web-Browsing."
+      ],
+      "answer": "Voice over IP."
+    },
+    {
+      "question": "Welches Schichtenmodell wird in den Quellen neben dem TCP/IP-Modell diskutiert?",
+      "options": [
+        "Das Internet-Modell.",
+        "Das Client-Server-Modell.",
+        "Das OSI-Schichtenmodell.",
+        "Das Peer-to-Peer-Modell."
+      ],
+      "answer": "Das OSI-Schichtenmodell."
+    },
+    {
+      "question": "Was realisieren Dienste in Computernetzen?",
+      "options": [
+        "Hardware-Komponenten.",
+        "Benutzeroberflächen.",
+        "Protokolle.",
+        "Speichermedien."
+      ],
+      "answer": "Protokolle."
+    },
+    {
+      "question": "Wann kann laut Quelle auf die Sitzungsschicht verzichtet werden?",
+      "options": [
+        "Wenn keine Daten übertragen werden.",
+        "Wenn das Netz ein Broadcastnetz ist.",
+        "Wenn das Netz keine Netzwerkschicht benötigt.",
+        "Wenn keine Sitzungen zu vereinbaren sind."
+      ],
+      "answer": "Wenn keine Sitzungen zu vereinbaren sind."
+    },
+    {
+      "question": "Wann können laut Quelle Aufgaben der Sitzungs- und Darstellungsschicht bereits in der Anwendungsschicht inkludiert sein?",
+      "options": [
+        "Immer.",
+        "Nie.",
+        "Gegebenenfalls.",
+        "Nur in Peer-to-Peer-Netzen."
+      ],
+      "answer": "Gegebenenfalls."
+    },
+    {
+      "question": "Wie lange braucht ein Bit von Europa nach Amerika über das Transatlantik-Telefonkabel (TAT-1) bei gegebener Länge und Signalausbreitungsgeschwindigkeit?",
+      "options": [
+        "3600 km / (2/3 * 300.000 km/s).",
+        "18 ms.",
+        "Ca. 0.16 s.",
+        "100 ms."
+      ],
+      "answer": "18 ms."
+    },
+    {
+      "question": "Wie viele Bits können sich bei einer Übertragungsrate von 10 Gbit/s maximal gleichzeitig im TAT-1 Seekabel befinden?",
+      "options": [
+        "3600 km * 10 Gbit/s.",
+        "18 ms * 10 Gbit/s.",
+        "180 Mbit.",
+        "10 Gbit."
+      ],
+      "answer": "180 Mbit."
+    },
+    {
+      "question": "Welche Technologie wird im ersten Kapitel als Basis der verteilten Verarbeitung dargestellt?",
+      "options": [
+        "Multiprozessorsysteme.",
+        "Computernetze.",
+        "Cloud Computing.",
+        "Datenbanken."
+      ],
+      "answer": "Computernetze."
+    },
+    {
+      "question": "Was wird in den Quellen als Problem bei vielen Smarthome-Geräten angesprochen?",
+      "options": [
+        "Hoher Energieverbrauch.",
+        "Komplizierte Installation.",
+        "Sicherheitslücken.",
+        "Hohe Anschaffungskosten."
+      ],
+      "answer": "Sicherheitslücken."
+    }
+  ],
+  "Informationstheorie & Phys.-Tech. Grundlagen": [
+    {
+      "question": "Was ist ein Ziel bei der Quantifizierung von Information?",
+      "options": [
+        "Messung der Datenkomprimierung.",
+        "Berechnung der erforderlichen Speicherkapazität für Informationen.",
+        "Analyse von Netzwerkprotokollen.",
+        "Bestimmung der Signalstärke."
+      ],
+      "answer": "Berechnung der erforderlichen Speicherkapazität für Informationen."
+    },
+    {
+      "question": "Wie groß ist der Informationsgehalt, wenn man ein Zeichen aus einem Zeichenvorrat von 32 auswählt?",
+      "options": [
+        "32 bit.",
+        "log2 32 bit.",
+        "5 bit.",
+        "1 bit."
+      ],
+      "answer": "5 bit."
+    },
+    {
+      "question": "Wie viele unterschiedliche Zustände können mit 6 Bit codiert werden?",
+      "options": [
+        "6.",
+        "12.",
+        "32.",
+        "64."
+      ],
+      "answer": "64."
+    },
+    {
+      "question": "Wie groß ist der Entscheidungsgehalt H0 beim Würfeln (6 gleich wahrscheinliche Zustände)?",
+      "options": [
+        "log2 6 bit.",
+        "6 bit.",
+        "2.58 bit.",
+        "1 bit."
+      ],
+      "answer": "2.58 bit."
+    },
+    {
+      "question": "Welcher Zusammenhang besteht zwischen dem Entscheidungsgehalt und der Anzahl notwendiger Alternativfragen, um ein Zeichen zu kennzeichnen?",
+      "options": [
+        "Es gibt keinen direkten Zusammenhang.",
+        "Der Entscheidungsgehalt ist gleich der Anzahl notwendiger Alternativfragen.",
+        "Der Entscheidungsgehalt ist größer als die Anzahl der Fragen.",
+        "Der Entscheidungsgehalt ist kleiner als die Anzahl der Fragen."
+      ],
+      "answer": "Der Entscheidungsgehalt ist gleich der Zahl notwendiger Alternativfragen nach dem von der…"
+    },
+    {
+      "question": "Wie verhält sich der Informationsgehalt eines Zeichens x zur seiner Auftrittswahrscheinlichkeit P(x)?",
+      "options": [
+        "Je kleiner P(x), desto kleiner der Informationsgehalt.",
+        "Je kleiner P(x), desto größer der Informationsgehalt.",
+        "Der Informationsgehalt ist unabhängig von P(x).",
+        "Er verhält sich linear zu P(x)."
+      ],
+      "answer": "Je kleiner die Auftrittswahrscheinlichkeit P(x) eines Zeichens x, desto größer soll der Informationsgehalt des Zeichens sein."
+    },
+    {
+      "question": "Wie berechnet sich der mittlere Informationsgehalt H(X) für eine Binärquelle mit Zeichen x1(0) und x2(1)?",
+      "options": [
+        "H(X) = P(x1) + P(x2).",
+        "H(X) = P(x1) * log2 P(x1) + P(x2) * log2 P(x2).",
+        "H(X) = –P(x1) · log2 P(x1) – P(x2) · log2 P(x2).",
+        "H(X) = log2(P(x1) + P(x2))."
+      ],
+      "answer": "H(X) = –P(x1) · log2 P(x1) – P(x2) · log2 P(x2)."
+    },
+    {
+      "question": "Wie wird der Informationsfluss I definiert?",
+      "options": [
+        "Produkt aus Symbolrate und Entropie.",
+        "Quotient aus Entropie und Übertragungszeit.",
+        "Differenz zwischen Kanalkapazität und Transinformation.",
+        "Summe aus Transinformation und Irrelevanz."
+      ],
+      "answer": "Der Quotient aus der Entropie der gesendeten Zeichenfolge der Länge N und der hierzu benötigten Übertragungszeit T."
+    },
+    {
+      "question": "Was versteht man unter Kanalkapazität Definition 2.1?",
+      "options": [
+        "Die maximale Bandbreite eines Kanals.",
+        "Der aktuell übertragene Informationsfluss.",
+        "Der größtmögliche Informationsfluss über einen gestörten Kanal.",
+        "Die Bitfehlerrate eines Kanals."
+      ],
+      "answer": "Der größtmögliche Informationsfluss über einen gestörten Kanal."
+    },
+    {
+      "question": "Worin besteht der Unterschied zwischen einem analogen und einem digitalen Signal?",
+      "options": [
+        "Analog ist wert- und zeitdiskret, digital ist wert- und zeitkontinuierlich.",
+        "Analog ist wert- und zeitkontinuierlich, digital ist wert- und zeitdiskret.",
+        "Analog ist immer digital, aber digital ist nicht immer analog.",
+        "Es gibt keinen Unterschied."
+      ],
+      "answer": "Das analoge Signal ist wert- und zeitkontinuierlich, das digitale Signal ist wert- und zeitdiskret."
+    },
+    {
+      "question": "Erklären Sie den Unterschied zwischen Abtastung und Quantisierung eines analogen Signals.",
+      "options": [
+        "Abtastung ist im Wertebereich, Quantisierung im Zeitbereich.",
+        "Abtastung ist die Diskretisierung im Zeitbereich, Quantisierung im Wertebereich (Signalstufen).",
+        "Beides sind Namen für denselben Prozess.",
+        "Abtastung ist digital, Quantisierung ist analog."
+      ],
+      "answer": "Abtastung ist die Diskretisierung eines kontinuierlichen Signals im Zeitbereich und Quantisierung ist die Diskretisierung eines Signals in Signalstufen, d.h. im entsprechenden Wertebereich."
+    },
+    {
+      "question": "Was ist ein Blockcode laut den Quellen?",
+      "options": [
+        "Ein Code, bei dem Buchstaben mit hoher Wahrscheinlichkeit kurze Codewörter erhalten.",
+        "Ein Code mit variabler Codewortlänge.",
+        "Ein Code, bei dem alle Zeichen die gleiche Länge haben.",
+        "Ein fehlererkennender Code."
+      ],
+      "answer": "Ein Code, bei dem alle Zeichen die gleiche Länge haben."
+    },
+    {
+      "question": "Welches Ziel wird bei der Quellencodierung von deutschem Text verfolgt, insbesondere im Vergleich zu einem Blockcode?",
+      "options": [
+        "Erhöhung der Redundanz.",
+        "Nur so viele Bits verwenden, wie es der Informationsgehalt erfordert.",
+        "Jedes Zeichen mit 8 Bit darstellen.",
+        "Einen Code mit gleicher Codewortlänge für alle Zeichen schaffen."
+      ],
+      "answer": "Ziel der Quellencodierung sollte es sein, nur so viele Zeichen (Bits) zu verwenden, wie es der Informationsgehalt der Zeichen erfordert."
+    },
+    {
+      "question": "Was ist der Zweck der Leitungscodierung (auch Übertragungscodes)?",
+      "options": [
+        "Reduzierung der Redundanz.",
+        "Anpassung der Signale an das Übertragungsmedium.",
+        "Fehlerkorrektur bei der Übertragung.",
+        "Quantifizierung von Information."
+      ],
+      "answer": "Mithilfe der Leitungscodierung kann eine direkte Anpassung der Signale an das Übertragungsmedium realisiert werden."
+    },
+    {
+      "question": "Welche Symbolrate ist erforderlich, um eine Bitrate von 60 Mbit/s zu erreichen, wenn pro Symbol 6 Bits codiert werden können?",
+      "options": [
+        "60 Mbit/s.",
+        "10 Mbit/s.",
+        "360 Mbit/s.",
+        "6 Mbit/s."
+      ],
+      "answer": "10 Mbit/s."
+    }
+  ],
+  "Bitübertragung und Netzzugang": [
+    {
+      "question": "Was bedeutet die Angabe '24 dB/100 m' für die Dämpfung eines Kabels?",
+      "options": [
+        "Die Übertragungsrate beträgt 24 Mbit/s pro 100 Meter.",
+        "Die Signalstärke sinkt um 24 Dezibel pro 100 Meter Kabellänge.",
+        "Das Kabel hat eine Bandbreite von 24 dB bei 100 MHz.",
+        "Es können maximal 24 Gbit/s über 100 Meter übertragen werden."
+      ],
+      "answer": "Die Signalstärke sinkt um 24 Dezibel pro 100 Meter Kabellänge."
+    },
+    {
+      "question": "Welchen Steckertyp nennt die Quelle für TP-Netzwerkkabel gemäß EIA/TIA 568A/568B?",
+      "options": [
+        "USB.",
+        "BNC.",
+        "RJ45.",
+        "HDMI."
+      ],
+      "answer": "RJ45."
+    },
+    {
+      "question": "Was ist der Unterschied zwischen einem Patchkabel und einem Verlegekabel laut Quelle?",
+      "options": [
+        "Patchkabel sind starr, Verlegekabel sind flexibel.",
+        "Patchkabel sind länger, Verlegekabel sind kürzer.",
+        "Patchkabel verbinden Endgeräte mit Dosen/Patchfeldern und sind flexibel; Verlegekabel enden an Datendosen und sind starr.",
+        "Verlegekabel werden vorrangig im Außenbereich eingesetzt, Patchkabel im Innenbereich."
+      ],
+      "answer": "Patchkabel sind flexibel, während das Verlegekabel relativ starr ist. Das Patchkabel wird für die Verbindung zwischen Datendose bzw. Bodentank und dem Endgerät genutzt."
+    },
+    {
+      "question": "Wie groß sind Kerndurchmesser und Manteldurchmesser einer Singlemode-Glasfaser mit der Bezeichnung 9/125 µm?",
+      "options": [
+        "9 µm Mantel, 125 µm Kern.",
+        "9 mm Kern, 125 mm Mantel.",
+        "9 µm Kern, 125 µm Mantel.",
+        "125 µm Kern, 9 µm Mantel."
+      ],
+      "answer": "9 µm Kerndurchmesser und 125 µm Manteldurchmesser."
+    },
+    {
+      "question": "Welchen Wellenlängenbereich nutzt die OM5 Glasfaser laut Quelle?",
+      "options": [
+        "1310 nm und 1550 nm.",
+        "850 nm und 953 nm.",
+        "1300 nm.",
+        "Es wird nur eine Wellenlänge genutzt."
+      ],
+      "answer": "Bei OM5 wird in den Wellenlängenbereichen von 850 nm und 953 nm gearbeitet."
+    },
+    {
+      "question": "Was ist ein Pigtail im Kontext von Glasfaserkabeln?",
+      "options": [
+        "Ein langes Verlegekabel.",
+        "Ein kurzes Glasfaserkabelstück mit einem Stecker an einem Ende zur Spleißverbindung.",
+        "Ein spezieller Steckertyp für Glasfaser.",
+        "Ein Werkzeug zum Spleißen."
+      ],
+      "answer": "Ein Pigtail ist ein kurzes Stück Glasfaserkabel, das an einem Ende einen Stecker besitzt. Das andere Ende kann über eine Spleißverbindung mit einem Verlegekabel verbunden werden."
+    },
+    {
+      "question": "Welche Kabeleigenschaften von TP-Kabeln werden durch das Verdrillen und die Abschirmung beeinflusst?",
+      "options": [
+        "Die Länge des Kabels.",
+        "Dämpfung und Übersprechen.",
+        "Die Anzahl der Adern.",
+        "Der Steckertyp."
+      ],
+      "answer": "Die Dämpfung und das Übersprechen."
+    },
+    {
+      "question": "Was bedeuten die Bezeichnungen U/UTP und S/FTP bei TP-Kabeln?",
+      "options": [
+        "Unshielded/Unshielded Twisted Pair und Shielded/Foiled Twisted Pair.",
+        "Uplink/Unidirectional Twisted Pair und Symmetric/Foiled Twisted Pair.",
+        "Unprotected/Unterminated Pair und Secured/Fast Transmission Pair.",
+        "Universal/Unshielded Transfer Protocol und Standard/Fast Transfer Protocol."
+      ],
+      "answer": "Unshielded/Unshielded Twisted Pair und Shielded/Foiled Twisted Pair."
+    },
+    {
+      "question": "Welche Art von MAC-Adresse ist FF:FF:FF:FF:FF:FF?",
+      "options": [
+        "Eine Unicast-Adresse.",
+        "Eine Multicast-Adresse.",
+        "Eine Broadcast-Adresse.",
+        "Eine ungültige Adresse."
+      ],
+      "answer": "Eine Broadcast-Adresse."
+    },
+    {
+      "question": "Ist die MAC-Adresse 00:0A:F2:G1:01:23 gültig?",
+      "options": [
+        "Ja, immer.",
+        "Nein, da 'G1' keine gültige hexadezimale Darstellung ist.",
+        "Ja, aber nur für Multicast.",
+        "Das hängt vom Hersteller ab."
+      ],
+      "answer": "Nein, da 'G1' keine gültige hexadezimale Darstellung ist."
+    },
+    {
+      "question": "Was ist der Hauptzweck des Tools Wireshark laut Quelle?",
+      "options": [
+        "Erstellung von Netzwerkdiagrammen.",
+        "Konfiguration von Netzwerkgeräten.",
+        "Netzwerkanalyse und Paketaufzeichnung/-auswertung.",
+        "Durchführung von Geschwindigkeitstests."
+      ],
+      "answer": "Grundfunktionen der Netzanalyse und des Tools Wireshark kennengelernt...Aufzeichnen und die Analyse von Paketen sowie das gezielte Filtern."
+    },
+    {
+      "question": "Welchen Anzeigefilter geben Sie in Wireshark ein, um nur ICMP-Pakete (wie ping) anzuzeigen?",
+      "options": [
+        "tcp.",
+        "http.",
+        "icmp.",
+        "udp."
+      ],
+      "answer": "icmp."
+    },
+    {
+      "question": "Wodurch wird die Dämpfung in TP-Kabeln laut Quelle beeinflusst?",
+      "options": [
+        "Durch die Anzahl der Hosts.",
+        "Durch die Entfernung und die Frequenz.",
+        "Durch die IP-Adresse.",
+        "Durch die gewählte Dienstklasse."
+      ],
+      "answer": "Die Dämpfung ist von der Entfernung und der Frequenz abhängig."
+    },
+    {
+      "question": "Welche Störungen beeinflussen WLAN laut den Quellen?",
+      "options": [
+        "Dämpfung und Übersprechen im Kabel.",
+        "Reflexionen und Interferenzen.",
+        "Langsame Routing-Protokolle.",
+        "Falsche IP-Adressen."
+      ],
+      "answer": "Reflexionen und Interferenzen."
+    },
+    {
+      "question": "Nennen Sie ein Beispiel für ein Frequenzband, das für WLAN genutzt wird.",
+      "options": [
+        "1550 nm.",
+        "100 MHz.",
+        "2.4 GHz oder 5 GHz.",
+        "30 dB."
+      ],
+      "answer": "2.4 GHz oder 5 GHz."
+    }
+  ],
+  "Routing in IP-Netzen (ITI24 K08)": [
+    {
+      "question": "Was geschieht mittels Routingprotokollen in einem Netz?",
+      "options": [
+        "Die Verschlüsselung von Datenpaketen.",
+        "Die Ermittlung der optimalen Wege durch das Netz.",
+        "Die Zuweisung von IP-Adressen.",
+        "Die Erkennung von Netzwerkfehlern."
+      ],
+      "answer": "die optimalen Wege durch ein Netz ermittelt werden."
+    },
+    {
+      "question": "Welchen Dienst bietet die Netzwerkschicht im Internet zunächst an?",
+      "options": [
+        "Einen verbindungsorientierten, zuverlässigen Dienst.",
+        "Einen Dienst mit Bandbreitengarantie.",
+        "Den Best-Effort-Dienst.",
+        "Einen Multicast-Dienst."
+      ],
+      "answer": "den Best-Effort-Dienst."
+    },
+    {
+      "question": "Welche der folgenden sind Parameter der Dienstgüte (Quality of Service)?",
+      "options": [
+        "Hostnamen und MAC-Adressen.",
+        "Bandbreite, Restfehlerrate und Verzögerung.",
+        "Hersteller der Netzkomponenten.",
+        "Der verwendete Steckertyp."
+      ],
+      "answer": "Bandbreite, Restfehlerrate, Verfügbarkeit, Zuverlässigkeit, Durchsatz, Verzögerung und Überlaststeuerung."
+    },
+    {
+      "question": "Wie wird die Schreibweise 192.168.1.0/24 bezeichnet?",
+      "options": [
+        "Klassenbasierte Notation.",
+        "Subnetzmasken-Notation.",
+        "CIDR-Notation.",
+        "Hexadezimale Notation."
+      ],
+      "answer": "als CIDR-Notation bezeichnet."
+    },
+    {
+      "question": "Wie lautet die Netzmaske in dezimaler und CIDR-Notation für die Adresse 142.150.20.15 bei einer Aufteilung NNN.NNN.HHH.HHH?",
+      "options": [
+        "255.255.0.0 und /16.",
+        "255.0.0.0 und /8.",
+        "255.255.255.0 und /24.",
+        "142.150.0.0 und /16."
+      ],
+      "answer": "255.255.0.0...CIDR-Notation an: /16"
+    },
+    {
+      "question": "Nennen Sie eine andere Möglichkeit der Bildung des Interface Identifier bei IPv6, die nicht auf der MAC-Adresse basiert.",
+      "options": [
+        "Manuelle Konfiguration.",
+        "Dynamische Zuweisung durch DHCPv6.",
+        "Zufällige Generierung.",
+        "Basierend auf dem Hostnamen."
+      ],
+      "answer": "zufällige Generierung."
+    },
+    {
+      "question": "Was ist der Unterschied zwischen ARP und NDP?",
+      "options": [
+        "ARP wird in IPv6 genutzt, NDP in IPv4.",
+        "ARP ist ein Routingprotokoll, NDP ein Adressierungsprotokoll.",
+        "ARP löst IP-Adressen in MAC-Adressen auf (IPv4), NDP übernimmt diese und weitere Aufgaben in IPv6.",
+        "Es gibt keinen Unterschied."
+      ],
+      "answer": "ARP löst IP-Adressen in MAC-Adressen auf (IPv4), NDP übernimmt diese und weitere Aufgaben in IPv6."
+    },
+    {
+      "question": "Wie funktioniert SLAAC?",
+      "options": [
+        "Adresszuweisung durch einen zentralen Server.",
+        "Hosts konfigurieren ihre IPv6-Adressen selbstständig basierend auf Informationen vom Router.",
+        "Es ist ein Verfahren zur Namensauflösung.",
+        "Ein Verschlüsselungsprotokoll."
+      ],
+      "answer": "Hosts konfigurieren ihre IPv6-Adressen selbstständig basierend auf Informationen vom Router."
+    },
+    {
+      "question": "Was ist das Prinzip des Forwarding (Weiterleitung)?",
+      "options": [
+        "Das Ändern der Datenpakete.",
+        "Das Kopieren von Datenpaketen.",
+        "Die Übergabe eines Pakets an die nächste Netzkomponente auf dem Weg zum Ziel.",
+        "Das Verwerfen von Datenpaketen."
+      ],
+      "answer": "Die Übergabe eines Pakets an die nächste Netzkomponente auf dem Weg zum Ziel."
+    },
+    {
+      "question": "Was ist Broadcastrouting?",
+      "options": [
+        "Ein Paket soll an alle anderen Hosts im Netz übertragen werden.",
+        "Ein Paket soll an einen spezifischen Host übertragen werden.",
+        "Ein Verfahren zur Fehlersuche im Netz.",
+        "Ein Protokoll für die sichere Übertragung."
+      ],
+      "answer": "Ein Paket soll an alle anderen Hosts im Netz übertragen werden."
+    },
+    {
+      "question": "Welches Risiko besteht beim unkontrollerten Fluten (Broadcasting)?",
+      "options": [
+        "Pakete gehen verloren.",
+        "Schleifenbildung kann zu einem Broadcast-Sturm führen und das Netz überlasten.",
+        "Die Reihenfolge der Pakete wird nicht eingehalten.",
+        "Es werden zu wenige Pakete gesendet."
+      ],
+      "answer": "Schleifenbildungen Broadcasts immer weiter kreisen und immer neue Pakete generiert werden, sodass das Netz von einem Broadcast-Sturm überrannt wird."
+    },
+    {
+      "question": "Welcher Routing-Algorithmus wird bei RIP genutzt?",
+      "options": [
+        "Link-State-Algorithmus.",
+        "Distance-Vector-Algorithmus.",
+        "Pfad-Vektor-Algorithmus.",
+        "Spanning Tree Algorithmus."
+      ],
+      "answer": "Distance-Vector-Algorithmus."
+    },
+    {
+      "question": "Welche Metrik verwendet RIP standardmäßig?",
+      "options": [
+        "Bandbreite.",
+        "Verzögerung.",
+        "Anzahl der Hops.",
+        "Zuverlässigkeit."
+      ],
+      "answer": "Anzahl der Hops."
+    },
+    {
+      "question": "Welche Metrik verwendet OSPF standardmäßig?",
+      "options": [
+        "Anzahl der Hops.",
+        "Verfügbare Bandbreite (Kostenberechnung).",
+        "Paketverlustrate.",
+        "Signalstärke."
+      ],
+      "answer": "verfügbare Bandbreite, Ermittlung der Kosten aus Quotient Referenzbandbreite / verfügbare Bandbreite"
+    },
+    {
+      "question": "In welchen Abständen tauschen RIP-Router standardmäßig Informationen aus?",
+      "options": [
+        "Nur bei Änderungen.",
+        "Alle 30 Sekunden, unabhängig von Änderungen.",
+        "Alle 30 Minuten.",
+        "Nur einmal beim Start."
+      ],
+      "answer": "Bei RIP alle 30 s unabhängig davon, ob eine Änderung erfolgt ist"
+    }
+  ],
+  "Netzkomponenten & Segmentierung (ITI25 K06)": [
+    {
+      "question": "Was versteht man unter einem 'Segment' im Kontext von Internetworking auf der Netzwerkschicht?",
+      "options": [
+        "Ein einzelnes Kabel.",
+        "Ein Netz oder ein Subnetz.",
+        "Eine physikalische Kollisionsdomäne.",
+        "Eine Broadcast-Domäne."
+      ],
+      "answer": "In der Netzwerkschicht versteht man unter einem Segment ein Netz oder ein Subnetz."
+    },
+    {
+      "question": "Welche Komponenten dienen laut Quelle zur Verbindung von Netzsegmenten auf der Datenverbindungsschicht?",
+      "options": [
+        "Repeater.",
+        "Router.",
+        "Bridges oder Switches.",
+        "Firewalls."
+      ],
+      "answer": "Auf der Datenverbindungsschicht werden Netzsegmente mittels Bridges oder Switches verbunden."
+    },
+    {
+      "question": "Welche Komponenten dienen laut Quelle zur Verbindung von Netzen auf der Netzwerkschicht?",
+      "options": [
+        "Repeater.",
+        "Router.",
+        "Switches.",
+        "Hubs."
+      ],
+      "answer": "ein Netz oder ein Subnetz, das über Router mit anderen Netzen verbunden werden kann."
+    },
+    {
+      "question": "Nennen Sie ein Beispiel für eine aktive Netzkomponente.",
+      "options": [
+        "Patchfeld.",
+        "Kabel.",
+        "Datendose.",
+        "Switch."
+      ],
+      "answer": "Aktive Komponenten umfassen Repeater, Hubs, Bridges, Switches, Router, Gateways und Firewalls."
+    },
+    {
+      "question": "Welcher Steckertyp wird für TP-Netzwerkkabel gemäß EIA/TIA 568A/568B genannt?",
+      "options": [
+        "USB.",
+        "RJ11.",
+        "RJ45.",
+        "HDMI."
+      ],
+      "answer": "Der Steckertyp für TP-Netzwerkkabel gemäß EIA/TIA 568A/568B ist RJ45."
+    },
+    {
+      "question": "Was ist der Hauptvorteil beim Einsatz eines Switches im Vergleich zu einem Hub bezüglich der Kollisionsdomäne?",
+      "options": [
+        "Die Kollisionsdomäne vergrößert sich.",
+        "Die Kollisionsdomäne verkleinert sich.",
+        "Es gibt keine Kollisionsdomäne mehr.",
+        "Die Broadcast-Domäne verkleinert sich."
+      ],
+      "answer": "Beim Einsatz eines Switches verkleinert sich die Kollisionsdomäne."
+    },
+    {
+      "question": "Anhand welcher Adressen lernt ein Switch die Zuordnung von Ports zu Hosts?",
+      "options": [
+        "IP-Adressen.",
+        "Unicast-MAC-Quelladressen.",
+        "Broadcast-Adressen.",
+        "Unicast-MAC-Zieladressen."
+      ],
+      "answer": "Unicast-MAC-Quelladresse."
+    },
+    {
+      "question": "Wie wird die Weiterleitungsrate (Forwarding Rate) bei Cisco-Switches angegeben?",
+      "options": [
+        "Mbit/s.",
+        "GBit/s.",
+        "Mpps (Millions of packets per second).",
+        "Baud."
+      ],
+      "answer": "Bei Cisco-Switchen wird die Forwarding Rate in Mpps (Millions of packets per second) angegeben."
+    },
+    {
+      "question": "Auf welchen Schichten des OSI-Modells kann laut Quelle Segmentierung erfolgen?",
+      "options": [
+        "Nur auf Schicht 1.",
+        "Nur auf Schicht 3.",
+        "Auf Schicht 1, Schicht 2 und Schicht 3.",
+        "Nur auf Schicht 7."
+      ],
+      "answer": "Auf welchen Schichten des OSI-Modells kann eine Segmentierung erfolgen?"
+    },
+    {
+      "question": "Wofür wird eine Subnetzmaske verwendet?",
+      "options": [
+        "Zur Verschlüsselung von Daten.",
+        "Zur Maskierung der Zugehörigkeit der IP-Adresse zum Subnetz.",
+        "Zur Erhöhung der Übertragungsrate.",
+        "Zur Identifizierung des Herstellers einer Netzkomponente."
+      ],
+      "answer": "Um die Zugehörigkeit zum Subnetz zu maskieren, wird der Begriff Subnetzmaske verwendet."
+    },
+    {
+      "question": "Was bedeutet eine '1' in der Subnetzmaske?",
+      "options": [
+        "Zugehörigkeit des entsprechenden Bits in der Adresse zu einer Hostadresse.",
+        "Das Bit ist für zukünftige Verwendung reserviert.",
+        "Zugehörigkeit des entsprechenden Bits in der Adresse zu einer Subnetzadresse.",
+        "Das Bit ist ungültig."
+      ],
+      "answer": "Eine „1“ in der Subnetzmaske bedeutet Zugehörigkeit des entsprechenden Bits in der Adresse zu einer Subnetzadresse."
+    },
+    {
+      "question": "Wofür steht die Abkürzung VLSM?",
+      "options": [
+        "Virtual Local Switching Mechanism.",
+        "Variable Length Subnet Mask.",
+        "Very Large Scale Monitoring.",
+        "Voice over LAN Standard Method."
+      ],
+      "answer": "VLSM – Variable Length Subnet Mask."
+    },
+    {
+      "question": "Welches der genannten Routingprotokolle unterstützt laut Quelle VLSM *nicht*?",
+      "options": [
+        "RIPv1.",
+        "OSPF.",
+        "BGP.",
+        "RIPv2."
+      ],
+      "answer": "Bei RIPv1 funktioniert VLSM beispielsweise nicht."
+    },
+    {
+      "question": "Wie plant man die Anzahl der Bits für die Subnetzadressierung basierend auf der Anzahl benötigter Subnetze?",
+      "options": [
+        "Man nimmt die Anzahl der Subnetze direkt.",
+        "Man rundet die Anzahl der Subnetze auf die nächste Zweierpotenz und nimmt den Exponenten.",
+        "Man dividiert die Gesamtzahl der Hosts durch die Anzahl der Subnetze.",
+        "Die Anzahl der Bits ist immer fest."
+      ],
+      "answer": "Anzahl der Subnetze feststellen und auf Zweierpotenz runden"
+    },
+    {
+      "question": "Welcher hochwertige Kupferkabeltyp wird neben Cat-7 und Cat-8 genannt?",
+      "options": [
+        "Cat-5.",
+        "Cat-6.",
+        "Koaxialkabel.",
+        "Twisted Pair."
+      ],
+      "answer": "Hochwertige Kupferverkabelung nutzt Cat-7-Kabel."
+    }
+  ],
+  "Kommunikationsmodelle & Dienste (ITI26 K05)": [
+    {
+      "question": "Welche Kommunikationsmodelle werden im ersten Kapitel des Studienhefts ITI26 behandelt?",
+      "options": [
+        "Bus- und Stern-Topologie.",
+        "WAN und LAN.",
+        "Client-Server- und Peer-to-Peer-Netze.",
+        "Token Ring und Ethernet."
+      ],
+      "answer": "In diesem ersten Kapitel beschäftigen wir uns mit den verschiedenen Varianten von Netzwerken und Kommunikationsmodellen... Client-Server-Netze, Peer-to-Peer-Netze (verkürzt: P2P)."
+    },
+    {
+      "question": "Was ist die Abkürzung für Peer-to-Peer-Netze?",
+      "options": [
+        "C/S.",
+        "LAN.",
+        "P2P.",
+        "WAN."
+      ],
+      "answer": "Peer-to-Peer-Netze (verkürzt: P2P)."
+    },
+    {
+      "question": "Wie nennt man einen Server, der für jede eingehende Anfrage einen neuen Prozess bzw. Thread startet?",
+      "options": [
+        "Iterativer Server.",
+        "Paralleler Server.",
+        "Single-Threaded Server.",
+        "Serieller Server."
+      ],
+      "answer": "Paralleler Server: Sobald eine Anfrage eintrifft, startet dieser Server einen neuen Prozess bzw. Thread."
+    },
+    {
+      "question": "Welchen Begriff finden Sie in mancher Literatur anstelle von Thread bei einem parallelen Server?",
+      "options": [
+        "Parent-Server-Prozess.",
+        "Main-Server.",
+        "Child-Server-Prozess.",
+        "Delegierter Prozess."
+      ],
+      "answer": "Child-Server-Prozess."
+    },
+    {
+      "question": "Wie regelt ein Browser den Zugriff auf WWW-Dokumente?",
+      "options": [
+        "Durch direkte Dateiübertragung (FTP).",
+        "Durch Kommunikation auf Basis des HTTP-Protokolls mit dem Webserver im Client-Server-Prinzip.",
+        "Durch Peer-to-Peer-Verbindungen zu anderen Browsern.",
+        "Über ein zentrales Verzeichnisdienst-Protokoll."
+      ],
+      "answer": "Der Browser kommuniziert auf Basis des HTTP-Protokolls mit dem Webserver. Der Zugriff erfolgt nach dem Client-Server-Prinzip in einer Art Dialog."
+    },
+    {
+      "question": "Welche Protokolle kommen laut Quelle beim Senden von E-Mails zum Einsatz?",
+      "options": [
+        "POP3 und IMAP.",
+        "HTTP und FTP.",
+        "SMTP.",
+        "TCP und UDP."
+      ],
+      "answer": "Beim Senden und Empfangen von E-Mails kommen drei verschiedene Protokolle zum Einsatz. Welche sind dies und welche dienen zum Senden und Empfangen? SMTP zum Senden."
+    },
+    {
+      "question": "Welche Protokolle kommen laut Quelle beim Empfangen von E-Mails zum Einsatz?",
+      "options": [
+        "SMTP.",
+        "POP3 und IMAP.",
+        "HTTP.",
+        "FTP."
+      ],
+      "answer": "Beim Senden und Empfangen von E-Mails kommen drei verschiedene Protokolle zum Einsatz. Welche sind dies und welche dienen zum Senden und Empfangen? POP3 und IMAP zum Empfangen."
+    },
+    {
+      "question": "Nennen Sie ein Argument für den Einsatz von IMAP anstelle von POP3.",
+      "options": [
+        "IMAP löscht E-Mails nach dem Herunterladen vom Server.",
+        "IMAP ist einfacher zu konfigurieren.",
+        "IMAP belässt die E-Mails standardmäßig auf dem Server und synchronisiert den Zustand über mehrere Geräte.",
+        "IMAP ist ausschließlich für Webmail geeignet."
+      ],
+      "answer": "IMAP belässt die E-Mails standardmäßig auf dem Server und synchronisiert den Zustand über mehrere Geräte."
+    },
+    {
+      "question": "Was bedeutet Medien-Streaming?",
+      "options": [
+        "Medien müssen vollständig heruntergeladen werden, bevor die Wiedergabe beginnt.",
+        "Medien werden während der Übertragung wiedergegeben.",
+        "Eine Methode zur Komprimierung von Mediendateien.",
+        "Das Senden von Medien über Peer-to-Peer-Netzwerke."
+      ],
+      "answer": "Medien werden während der Übertragung wiedergegeben."
+    },
+    {
+      "question": "Was sind Service Level Agreements (SLAs)?",
+      "options": [
+        "Technische Spezifikationen für Netzwerkgeräte.",
+        "Vereinbarungen, die technische und nicht-technische Aspekte einer Dienstleistung abbilden.",
+        "Protokolle zur Netzwerküberwachung.",
+        "Richtlinien für die Firewall-Konfiguration."
+      ],
+      "answer": "Diese SLAs sind explizit nicht auf technische Aspekte beschränkt. Es geht vielmehr um eine gesamtheitliche Abbildung aller Bedürfnisse."
+    },
+    {
+      "question": "Welche Funktionseinheit des Netzwerkmanagements nach dem OSI-Framework befasst sich mit der Überwachung der Systemleistungen?",
+      "options": [
+        "Fault Management.",
+        "Configuration Management.",
+        "Performance Management.",
+        "Security Management."
+      ],
+      "answer": "Performance [Leistung]."
+    },
+    {
+      "question": "Wofür steht die Abkürzung SNMP?",
+      "options": [
+        "Secure Network Protocol.",
+        "Simple Mail Transfer Protocol.",
+        "Simple Network Management Protocol.",
+        "System Naming and Mapping Protocol."
+      ],
+      "answer": "Simple Network Management Protocol."
+    },
+    {
+      "question": "Was ist ein Trojaner laut den Quellen?",
+      "options": [
+        "Ein Hardwaregerät.",
+        "Ein Programm, das sich als nützlich ausgibt, aber schädliche Funktionen ausführt.",
+        "Eine Technik zur Abwehr von Cyberangriffen.",
+        "Ein Virus, der Daten verschlüsselt."
+      ],
+      "answer": "Ein Trojaner ist ein Programm, das sich als nützlich ausgibt, im Hintergrund aber schädliche Funktionen ausführt."
+    },
+    {
+      "question": "Worin liegt der Unterschied zwischen einem symmetrischen und einem asymmetrischen Verschlüsselungsverfahren?",
+      "options": [
+        "Symmetrisch nutzt ein Schlüsselpaar (Public/Private), asymmetrisch nur einen Schlüssel.",
+        "Asymmetrisch ist immer schneller als symmetrisch.",
+        "Symmetrisch nutzt denselben Schlüssel für Ver- und Entschlüsselung, asymmetrisch nutzt ein Schlüsselpaar (Public/Private).",
+        "Es gibt keinen Unterschied."
+      ],
+      "answer": "Im symmetrischen Verfahren wird nur ein Schlüssel für Ver- und Entschlüsselung verwendet, während im asymmetrischen Verfahren ein Schlüsselpaar zum Einsatz kommt."
+    },
+    {
+      "question": "Was beschreibt der Begriff 'Distributed Ledger' (im Kontext von Blockchain)?",
+      "options": [
+        "Eine zentralisierte Datenbank.",
+        "Ein einzelnes, unveränderliches Datenblatt.",
+        "Eine Datenbasis, deren identische Kopie unter allen beteiligten Knoten eines dezentralen Netzes vorliegt.",
+        "Ein Verfahren zur Datenkomprimierung."
+      ],
+      "answer": "Eine Datenbasis, deren identische Kopie unter allen beteiligten Knoten eines dezentralen Netzes vorliegt."
+    }
+  ]
+}

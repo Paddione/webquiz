@@ -1,0 +1,104 @@
+/* style.css */
+/* General body styling is handled by Tailwind in the HTML */
+body {
+    font-family: 'Inter', sans-serif;
+}
+
+/* Custom styles for quiz elements */
+.option-btn {
+    @apply w-full p-3 md:p-4 bg-slate-700 text-slate-100 rounded-lg text-left text-base md:text-lg transition-all duration-150 ease-in-out shadow-md;
+    @apply hover:bg-sky-600 hover:ring-2 hover:ring-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-500;
+    border: 1px solid transparent; /* Base border */
+}
+
+.option-btn.selected { /* When user clicks an option */
+    @apply bg-sky-500 ring-2 ring-sky-300;
+}
+
+.option-btn.correct { /* After result: if this option was correct */
+    @apply bg-green-500 !important; /* Use !important to override hover/selected if needed */
+    @apply text-white font-semibold border-green-400;
+    animation: pulse-correct 0.6s ease-out;
+}
+
+.option-btn.incorrect-picked { /* After result: if user picked this and it was wrong */
+    @apply bg-red-500 !important;
+    @apply text-white font-semibold border-red-400;
+    animation: shake-incorrect 0.5s ease-out;
+}
+
+.option-btn.reveal-correct { /* After result: to highlight the correct answer if user picked wrong */
+    @apply bg-green-600/70 border-green-500 ring-2 ring-green-400;
+}
+
+
+.option-btn:disabled {
+    @apply opacity-60 cursor-not-allowed hover:bg-slate-700;
+}
+
+/* Animations for feedback */
+@keyframes pulse-correct {
+    0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(45, 206, 137, 0.7); }
+    50% { transform: scale(1.03); box-shadow: 0 0 10px 5px rgba(45, 206, 137, 0.3); }
+    100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(45, 206, 137, 0); }
+}
+
+@keyframes shake-incorrect {
+    0%, 100% { transform: translateX(0); }
+    20%, 60% { transform: translateX(-4px); }
+    40%, 80% { transform: translateX(4px); }
+}
+
+/* Player list styling */
+.player-entry {
+    @apply flex justify-between items-center p-2 bg-slate-600 rounded;
+}
+.player-name {
+    @apply text-slate-100;
+}
+.player-host-badge {
+    @apply text-xs bg-sky-500 text-white px-2 py-0.5 rounded-full ml-2;
+}
+.player-score-lobby {
+    @apply text-sm text-green-400 font-semibold;
+}
+
+
+/* Final Scores Styling */
+.final-score-entry {
+    @apply flex justify-between items-center p-2 bg-slate-700 rounded-lg text-lg;
+}
+.final-score-entry:nth-child(1) { @apply bg-yellow-500 text-slate-900 font-bold; } /* Gold for 1st */
+.final-score-entry:nth-child(2) { @apply bg-slate-400 text-slate-900 font-semibold; } /* Silver for 2nd */
+.final-score-entry:nth-child(3) { @apply bg-orange-400 text-slate-900 font-semibold; } /* Bronze for 3rd */
+
+
+/* Responsive adjustments for smaller screens */
+@media (max-width: 640px) {
+    .text-4xl { font-size: 2rem; } /* Adjust heading size */
+    .text-3xl { font-size: 1.75rem; }
+    .text-2xl { font-size: 1.25rem; }
+    .p-8 { padding: 1.5rem; } /* Reduce padding on smaller screens */
+    .p-6 { padding: 1.25rem; }
+}
+
+/* Ensure inputs and buttons are easily tappable */
+input[type="text"], input[type="number"], button {
+    min-height: 44px;
+}
+
+/* Tailwind custom scrollbar (optional, for aesthetics) */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+::-webkit-scrollbar-track {
+    background: #1e293b; /* slate-800 */
+}
+::-webkit-scrollbar-thumb {
+    background: #38bdf8; /* sky-400 */
+    border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: #0ea5e9; /* sky-500 */
+}
