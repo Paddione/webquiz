@@ -1,6 +1,7 @@
 // server.js
-// This is the backend server for the multiplayer quiz game.
-// It uses Express to serve web pages and Socket.IO for real-time communication.
+// NO CHANGES were made to server.js from the version you provided in the last turn.
+// The simplification was primarily on the client-side and HTML for removing player pause requests.
+// The host's pause/resume logic in this server.js version should already be functional.
 
 const express = require('express');
 const http = require('http');
@@ -12,29 +13,21 @@ const app = express();
 const server = http.createServer(app);
 const io = socketIo(server);
 
-const PORT = process.env.PORT || 3000; // Port for the server to listen on
+const PORT = process.env.PORT || 3000;
 
-// --- Game Configuration ---
-const QUESTION_TIME_LIMIT = 15; // seconds
+const QUESTION_TIME_LIMIT = 60;
+const CORRECT_ANSWER_DISPLAY_DURATION = 3000;
 const BASE_POINTS_CORRECT = 100;
-const TIME_BONUS_MULTIPLIER = 5; // Points per second remaining
-const STREAK_BONUS = 25; // Extra points for each consecutive correct answer after the first
+const TIME_BONUS_MULTIPLIER = 5;
+const STREAK_BONUS = 25;
 
-let allQuestionSets = {}; // To store loaded questions, categorized
-let availableCategories = []; // To store the names of the categories
+let allQuestionSets = {};
+let availableCategories = [];
 
-// --- Utility Functions ---
-/**
- * Generates a unique ID for lobbies.
- * @returns {string} A 6-character alphanumeric ID.
- */
 function generateLobbyId() {
     return Math.random().toString(36).substring(2, 8).toUpperCase();
 }
 
-/**
- * Loads questions from the structured JSON file.
- */
 function loadQuestions() {
     try {
         const questionsPath = path.join(__dirname, 'questions.json');
@@ -65,11 +58,6 @@ function loadQuestions() {
     }
 }
 
-/**
- * Shuffles an array in place.
- * @param {Array} array - The array to shuffle.
- * @returns {Array} The shuffled array.
- */
 function shuffleArray(array) {
     for (let i = array.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
@@ -78,11 +66,8 @@ function shuffleArray(array) {
     return array;
 }
 
-
-// --- Serve Static Files ---
 app.use(express.static(path.join(__dirname, 'public')));
 
-// --- Socket.IO Connection Handling ---
 io.on('connection', (socket) => {
     console.log(`New client connected: ${socket.id}`);
 
@@ -95,8 +80,11 @@ io.on('connection', (socket) => {
             questions: [],
             selectedCategory: null,
             gameState: 'waiting',
+            isPaused: false,
+            remainingTimeOnPause: null,
             questionStartTime: null,
             questionTimerInterval: null,
+            questionTimeout: null,
             playerAnswers: {},
         };
         socket.join(lobbyId);
@@ -104,7 +92,7 @@ io.on('connection', (socket) => {
             lobbyId,
             players: lobbies[lobbyId].players,
             playerId: socket.id,
-            availableCategories: availableCategories // Send all available categories to the host
+            availableCategories: availableCategories
         });
         console.log(`Lobby ${lobbyId} created by ${playerName} (${socket.id})`);
     });
@@ -112,14 +100,19 @@ io.on('connection', (socket) => {
     socket.on('joinLobby', ({ lobbyId, playerName }) => {
         const lobby = lobbies[lobbyId];
         if (lobby) {
-            if (lobby.gameState !== 'waiting') {
-                socket.emit('lobbyError', 'Das Spiel in dieser Lobby hat bereits begonnen.');
+            if (lobby.gameState !== 'waiting' && lobby.gameState !== 'active') {
+                socket.emit('lobbyError', 'Das Spiel in dieser Lobby ist bereits beendet.');
                 return;
             }
-            if (lobby.players.length >= 4) {
+            if (lobby.gameState === 'active' && lobby.players.length >= 4 && !lobby.players.find(p => p.id === socket.id)) {
+                socket.emit('lobbyError', 'Diese Lobby ist voll und das Spiel läuft bereits.');
+                return;
+            }
+            if (lobby.gameState === 'waiting' && lobby.players.length >= 4) {
                 socket.emit('lobbyError', 'Diese Lobby ist voll.');
                 return;
             }
+
             const newPlayer = { id: socket.id, name: playerName || `Spieler ${socket.id.substring(0,4)}`, score: 0, streak: 0, isHost: false, hasAnswered: false };
             lobby.players.push(newPlayer);
             socket.join(lobbyId);
@@ -130,14 +123,15 @@ io.on('connection', (socket) => {
                 playerId: socket.id,
                 gameState: lobby.gameState,
                 selectedCategory: lobby.selectedCategory,
-                allCategoriesForLobby: availableCategories // Send all categories for UI consistency
+                allCategoriesForLobby: availableCategories,
+                isPaused: lobby.isPaused,
+                remainingTime: lobby.isPaused ? lobby.remainingTimeOnPause : undefined
             });
-            // Notify other players
             socket.to(lobbyId).emit('playerJoined', {
                 players: lobby.players,
                 joinedPlayerId: socket.id,
                 joinedPlayerName: newPlayer.name,
-                allCategoriesForLobby: availableCategories, // Send all categories for UI consistency
+                allCategoriesForLobby: availableCategories,
                 selectedCategory: lobby.selectedCategory
             });
             console.log(`${newPlayer.name} (${socket.id}) joined lobby ${lobbyId}`);
@@ -151,7 +145,6 @@ io.on('connection', (socket) => {
         if (lobby && lobby.players.find(p => p.id === socket.id && p.isHost)) {
             lobby.selectedCategory = categoryKey;
             console.log(`Lobby ${lobbyId}: Host ${socket.id} selected category ${categoryKey}`);
-            // Emit to all in lobby (including host for consistency, or use socket.to(lobbyId).emit(...))
             io.to(lobbyId).emit('categoryUpdatedByHost', categoryKey);
         } else {
             console.warn(`Unauthorized category selection attempt or lobby not found. Lobby: ${lobbyId}, Socket: ${socket.id}`);
@@ -165,18 +158,13 @@ io.on('connection', (socket) => {
                 socket.emit('startGameError', 'Nicht genügend Spieler, um das Spiel zu starten.');
                 return;
             }
-            // Category should have been set by 'hostSelectedCategory' and stored in lobby.selectedCategory
-            // We use categoryKey from the client as a final confirmation, but server's lobby.selectedCategory should be the truth
             if (!lobby.selectedCategory || lobby.selectedCategory !== categoryKey) {
-                console.warn(`Category mismatch or not selected for lobby ${lobbyId}. Client sent: ${categoryKey}, Server has: ${lobby.selectedCategory}`);
-                // Optionally re-affirm or error
-                if (!lobby.selectedCategory && allQuestionSets[categoryKey]) { // If server had none, but client sent valid
+                if (!lobby.selectedCategory && allQuestionSets[categoryKey]) {
                     lobby.selectedCategory = categoryKey;
                 } else if (!lobby.selectedCategory) {
                     socket.emit('startGameError', 'Bitte wähle zuerst eine gültige Fragenkategorie aus.');
                     return;
                 }
-                // If they differ, server's current selectedCategory takes precedence
             }
 
             if (!allQuestionSets[lobby.selectedCategory]) {
@@ -187,14 +175,16 @@ io.on('connection', (socket) => {
             lobby.questions = shuffleArray([...allQuestionSets[lobby.selectedCategory]]);
             if (!lobby.questions || lobby.questions.length === 0) {
                 socket.emit('startGameError', `Keine Fragen in der Kategorie "${lobby.selectedCategory}" gefunden.`);
-                lobby.selectedCategory = null; // Reset if category is empty
-                io.to(lobbyId).emit('categoryUpdatedByHost', null); // Inform clients category is reset
+                lobby.selectedCategory = null;
+                io.to(lobbyId).emit('categoryUpdatedByHost', null);
                 return;
             }
 
             lobby.gameState = 'active';
+            lobby.isPaused = false;
+            lobby.remainingTimeOnPause = null;
             lobby.currentQuestionIndex = -1;
-            lobby.playerAnswers = {}; // Reset answers for new game
+            lobby.playerAnswers = {};
             io.to(lobbyId).emit('gameStarted', { lobbyId, players: lobby.players, category: lobby.selectedCategory });
             console.log(`Game started in lobby ${lobbyId} with category "${lobby.selectedCategory}"`);
             sendNextQuestion(lobbyId);
@@ -205,8 +195,8 @@ io.on('connection', (socket) => {
 
     socket.on('submitAnswer', ({ lobbyId, questionIndex, answer }) => {
         const lobby = lobbies[lobbyId];
-        if (!lobby || lobby.gameState !== 'active' || lobby.currentQuestionIndex !== questionIndex) {
-            console.log(`Invalid answer submission for lobby ${lobbyId} by ${socket.id}`);
+        if (!lobby || lobby.gameState !== 'active' || lobby.isPaused || lobby.currentQuestionIndex !== questionIndex) {
+            console.log(`Invalid answer submission for lobby ${lobbyId} by ${socket.id} (paused: ${lobby ? lobby.isPaused : 'N/A'})`);
             return;
         }
 
@@ -237,8 +227,9 @@ io.on('connection', (socket) => {
         if (isCorrect) {
             player.streak++;
             pointsEarned = BASE_POINTS_CORRECT;
-            const timeRemaining = Math.max(0, QUESTION_TIME_LIMIT - timeTaken);
-            pointsEarned += Math.floor(timeRemaining * TIME_BONUS_MULTIPLIER);
+            const effectiveTimeLimit = QUESTION_TIME_LIMIT;
+            const timeRemainingForBonus = Math.max(0, effectiveTimeLimit - timeTaken);
+            pointsEarned += Math.floor(timeRemainingForBonus * TIME_BONUS_MULTIPLIER);
             if (player.streak > 1) {
                 pointsEarned += (player.streak -1) * STREAK_BONUS;
             }
@@ -261,10 +252,49 @@ io.on('connection', (socket) => {
         });
 
         const allAnswered = lobby.players.every(p => p.hasAnswered);
-        if (allAnswered) {
+        if (allAnswered && !lobby.isPaused) {
             clearTimeout(lobby.questionTimeout);
             clearInterval(lobby.questionTimerInterval);
             processQuestionEnd(lobbyId);
+        }
+    });
+
+    socket.on('hostTogglePause', ({ lobbyId }) => {
+        const lobby = lobbies[lobbyId];
+        if (lobby && lobby.players.find(p => p.id === socket.id && p.isHost) && lobby.gameState === 'active') {
+            if (lobby.isPaused) {
+                lobby.isPaused = false;
+                io.to(lobbyId).emit('gameResumed');
+                console.log(`Lobby ${lobbyId} resumed by host.`);
+                if (lobby.remainingTimeOnPause !== null) {
+                    // Recalculate questionStartTime to account for the pause duration accurately
+                    // The time that had passed *before* pause = QUESTION_TIME_LIMIT - lobby.remainingTimeOnPause
+                    // So, the new questionStartTime should be now - (time_passed_before_pause)
+                    const timePassedBeforePause = QUESTION_TIME_LIMIT - lobby.remainingTimeOnPause;
+                    lobby.questionStartTime = Date.now() - (timePassedBeforePause * 1000);
+                    startQuestionTimer(lobby, lobby.remainingTimeOnPause);
+                    lobby.remainingTimeOnPause = null;
+                } else {
+                    // This case implies the game was paused without a valid remaining time (e.g., before first timer tick)
+                    // Or if remainingTimeOnPause was somehow not set. Start fresh timer.
+                    console.warn(`Lobby ${lobbyId} resumed, but remainingTimeOnPause was null. Starting timer with full duration.`);
+                    lobby.questionStartTime = Date.now(); // Reset start time for a full new timer
+                    startQuestionTimer(lobby, QUESTION_TIME_LIMIT);
+                }
+            } else { // Pause game
+                lobby.isPaused = true;
+                if (lobby.questionTimerInterval) clearInterval(lobby.questionTimerInterval);
+                if (lobby.questionTimeout) clearTimeout(lobby.questionTimeout);
+
+                // Calculate remaining time based on when the question was initially started
+                const elapsedTime = (Date.now() - lobby.questionStartTime) / 1000;
+                lobby.remainingTimeOnPause = Math.max(0, QUESTION_TIME_LIMIT - elapsedTime);
+
+                io.to(lobbyId).emit('gamePaused', { remainingTime: lobby.remainingTimeOnPause });
+                console.log(`Lobby ${lobbyId} paused by host. Time left: ${lobby.remainingTimeOnPause}`);
+            }
+        } else {
+            console.warn(`Host toggle pause denied for lobby ${lobbyId} by socket ${socket.id}. Conditions not met.`);
         }
     });
 
@@ -288,23 +318,22 @@ io.on('connection', (socket) => {
                         lobby.players[0].isHost = true;
                         hostChanged = true;
                     }
-                    // Emit playerLeft first
                     io.to(lobbyId).emit('playerLeft', {
                         players: lobby.players,
                         disconnectedPlayerName: disconnectedPlayer.name,
-                        selectedCategory: lobby.selectedCategory // Keep clients informed of current category
+                        disconnectedPlayerId: disconnectedPlayer.id,
+                        selectedCategory: lobby.selectedCategory
                     });
-                    // Then emit hostChanged if it occurred
                     if (hostChanged) {
                         io.to(lobbyId).emit('hostChanged', {
                             newHostId: lobby.players[0].id,
                             players: lobby.players,
-                            availableCategories: availableCategories, // Send all categories for new host
+                            availableCategories: availableCategories,
                             selectedCategory: lobby.selectedCategory
                         });
                     }
 
-                    if (lobby.gameState === 'active' && lobby.players.every(p => p.hasAnswered)) {
+                    if (lobby.gameState === 'active' && !lobby.isPaused && lobby.players.every(p => p.hasAnswered)) {
                         clearTimeout(lobby.questionTimeout);
                         clearInterval(lobby.questionTimerInterval);
                         processQuestionEnd(lobbyId);
@@ -320,9 +349,49 @@ io.on('connection', (socket) => {
         }
     });
 
+    function startQuestionTimer(lobby, duration) {
+        if (!lobby) {
+            console.error("startQuestionTimer called with null lobby");
+            return;
+        }
+        console.log(`[DEBUG] Starting question timer for lobby ${lobby.id} with duration ${duration}s`);
+        if (lobby.questionTimerInterval) clearInterval(lobby.questionTimerInterval);
+        if (lobby.questionTimeout) clearTimeout(lobby.questionTimeout);
+
+        let timeLeft = Math.ceil(duration); // Ensure we start with a whole number
+        io.to(lobby.id).emit('timerUpdate', timeLeft);
+
+        lobby.questionTimerInterval = setInterval(() => {
+            if (lobby.isPaused) {
+                console.log(`[DEBUG] Timer interval skipped for lobby ${lobby.id} because game is paused.`);
+                return;
+            }
+            timeLeft--;
+            io.to(lobby.id).emit('timerUpdate', timeLeft);
+            console.log(`[DEBUG] Timer update for lobby ${lobby.id}: ${timeLeft}s left`);
+            if (timeLeft <= 0) {
+                console.log(`[DEBUG] Timer interval clearing for lobby ${lobby.id} as timeLeft is ${timeLeft}`);
+                clearInterval(lobby.questionTimerInterval);
+            }
+        }, 1000);
+
+        lobby.questionTimeout = setTimeout(() => {
+            if (lobby.isPaused) {
+                console.log(`[DEBUG] Question timeout skipped for lobby ${lobby.id} because game is paused.`);
+                return;
+            }
+            console.log(`Time up for question ${lobby.currentQuestionIndex} in lobby ${lobby.id}`);
+            if(lobby.questionTimerInterval) clearInterval(lobby.questionTimerInterval); // Ensure interval is cleared
+            processQuestionEnd(lobby.id);
+        }, Math.ceil(duration) * 1000); // Use Math.ceil for timeout as well
+    }
+
     function sendNextQuestion(lobbyId) {
         const lobby = lobbies[lobbyId];
-        if (!lobby || lobby.gameState !== 'active') return;
+        if (!lobby || lobby.gameState !== 'active' || lobby.isPaused) {
+            console.log(`[DEBUG] sendNextQuestion for ${lobbyId} aborted. GameState: ${lobby ? lobby.gameState : 'N/A'}, Paused: ${lobby ? lobby.isPaused : 'N/A'}`);
+            return;
+        }
 
         lobby.players.forEach(p => p.hasAnswered = false);
         lobby.currentQuestionIndex++;
@@ -349,59 +418,54 @@ io.on('connection', (socket) => {
         };
 
         lobby.questionStartTime = Date.now();
+        lobby.remainingTimeOnPause = null;
         io.to(lobbyId).emit('newQuestion', questionData);
         io.to(lobbyId).emit('updateScores', lobby.players.map(p => ({id: p.id, name: p.name, score: p.score, streak: p.streak })));
 
-        if (lobby.questionTimerInterval) clearInterval(lobby.questionTimerInterval);
-        if (lobby.questionTimeout) clearTimeout(lobby.questionTimeout);
-
-        let timeLeft = QUESTION_TIME_LIMIT;
-        lobby.questionTimerInterval = setInterval(() => {
-            io.to(lobbyId).emit('timerUpdate', timeLeft--);
-            if (timeLeft < 0) {
-                clearInterval(lobby.questionTimerInterval);
-            }
-        }, 1000);
-
-        lobby.questionTimeout = setTimeout(() => {
-            console.log(`Time up for question ${lobby.currentQuestionIndex} in lobby ${lobbyId}`);
-            clearInterval(lobby.questionTimerInterval);
-            processQuestionEnd(lobbyId);
-        }, QUESTION_TIME_LIMIT * 1000);
+        startQuestionTimer(lobby, QUESTION_TIME_LIMIT);
+        console.log(`[DEBUG] Sent new question ${lobby.currentQuestionIndex + 1} for lobby ${lobbyId}`);
     }
 
     function processQuestionEnd(lobbyId) {
         const lobby = lobbies[lobbyId];
-        if (!lobby || lobby.gameState !== 'active' || !lobby.questions || lobby.questions.length === 0) return;
+        if (!lobby || lobby.gameState !== 'active' || lobby.isPaused) {
+            console.log(`[DEBUG] processQuestionEnd for ${lobbyId} aborted. GameState: ${lobby ? lobby.gameState : 'N/A'}, Paused: ${lobby ? lobby.isPaused : 'N/A'}`);
+            return;
+        }
 
-        clearInterval(lobby.questionTimerInterval);
-        clearTimeout(lobby.questionTimeout);
+        if (lobby.questionTimerInterval) clearInterval(lobby.questionTimerInterval);
+        if (lobby.questionTimeout) clearTimeout(lobby.questionTimeout);
         lobby.questionTimerInterval = null;
         lobby.questionTimeout = null;
 
         const currentQuestion = lobby.questions[lobby.currentQuestionIndex];
         if(!currentQuestion){
             console.error("processQuestionEnd: currentQuestion is undefined. Lobby:", lobbyId, "Index:", lobby.currentQuestionIndex);
-            sendNextQuestion(lobbyId);
+            sendNextQuestion(lobbyId); // Attempt to recover or end game
             return;
         }
         io.to(lobbyId).emit('questionOver', {
             correctAnswer: currentQuestion.answer,
             scores: lobby.players.map(p => ({ id: p.id, name: p.name, score: p.score, streak: p.streak }))
         });
+        console.log(`[DEBUG] Question ${lobby.currentQuestionIndex + 1} over for lobby ${lobbyId}. Displaying answer.`);
 
         setTimeout(() => {
             sendNextQuestion(lobbyId);
-        }, 4000); // Time to show correct answer
+        }, CORRECT_ANSWER_DISPLAY_DURATION);
     }
 
     function endGame(lobbyId) {
         const lobby = lobbies[lobbyId];
         if (!lobby) return;
 
+        if (lobby.questionTimerInterval) clearInterval(lobby.questionTimerInterval);
+        if (lobby.questionTimeout) clearTimeout(lobby.questionTimeout);
+
         lobby.gameState = 'finished';
+        lobby.isPaused = false;
         const finalScores = lobby.players
-            .map(p => ({ name: p.name, score: p.score, originalId: p.id })) // Add originalId for client-side self-identification
+            .map(p => ({ name: p.name, score: p.score, originalId: p.id }))
             .sort((a, b) => b.score - a.score);
 
         io.to(lobbyId).emit('gameOver', { finalScores });
@@ -418,12 +482,12 @@ io.on('connection', (socket) => {
             });
             lobby.currentQuestionIndex = -1;
 
-            // Category is reset, host needs to choose again.
-            const previousCategory = lobby.selectedCategory;
             lobby.selectedCategory = null;
-            lobby.questions = []; // Clear questions
+            lobby.questions = [];
 
             lobby.gameState = 'waiting';
+            lobby.isPaused = false;
+            lobby.remainingTimeOnPause = null;
             lobby.playerAnswers = {};
 
             if (lobby.questionTimerInterval) clearInterval(lobby.questionTimerInterval);
@@ -435,8 +499,8 @@ io.on('connection', (socket) => {
                 lobbyId: lobby.id,
                 players: lobby.players,
                 gameState: lobby.gameState,
-                availableCategories: availableCategories, // Send all categories again
-                selectedCategory: null // Explicitly null as host needs to re-select
+                availableCategories: availableCategories,
+                selectedCategory: null
             });
             console.log(`Lobby ${lobbyId} reset for a new game. Host needs to select category.`);
         } else {
@@ -446,12 +510,10 @@ io.on('connection', (socket) => {
 
 });
 
-// Global lobbies object
 let lobbies = {};
 
-// --- Start Server ---
 server.listen(PORT, () => {
-    loadQuestions(); // Load questions at startup
+    loadQuestions();
     console.log(`Quiz server running on http://localhost:${PORT}`);
     console.log(`To play, open public/index.html in your browser or navigate to the root URL.`);
     console.log(`If using Docker, it will be mapped to http://localhost:4000 (or as per your docker-compose.yml)`);

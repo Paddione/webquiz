@@ -1,9 +1,8 @@
 // public/script.js
 document.addEventListener('DOMContentLoaded', () => {
-    const socket = io(); // Connect to the server
+    const socket = io();
 
     // --- DOM Elements ---
-    // ... (all other DOM elements remain the same) ...
     const lobbyConnectContainer = document.getElementById('lobby-connect-container');
     const playerNameInput = document.getElementById('player-name');
     const createLobbyBtn = document.getElementById('create-lobby-btn');
@@ -41,21 +40,26 @@ document.addEventListener('DOMContentLoaded', () => {
     const leaveLobbyBtn = document.getElementById('leave-lobby-btn');
 
     const globalNotification = document.getElementById('global-notification');
-    const muteBtn = document.getElementById('mute-btn'); // Mute button
+    const muteBtn = document.getElementById('mute-btn');
+
+    const hostTogglePauseBtn = document.getElementById('host-toggle-pause-btn');
+    const gamePausedOverlay = document.getElementById('game-paused-overlay');
+    const pauseResumeMessage = document.getElementById('pause-resume-message');
 
     // --- Game State Variables ---
     let currentLobbyId = null;
     let currentPlayerId = null;
     let currentQuestionIndex = -1;
     let isHost = false;
-    let questionTimeLimit = 15;
+    let questionTimeLimit = 60;
     let currentSelectedCategoryKey = null;
     let allAvailableCategoriesCache = [];
-    let isMuted = false; // Mute state
+    let isMuted = false;
+    let isGamePaused = false;
 
     // --- Sound Effects ---
-    const soundEffectsVolume = 0.3; // Default volume for general sound effects
-    const menuMusicVolume = 0.5;   // Default volume for menu music
+    const soundEffectsVolume = 0.3;
+    const menuMusicVolume = 0.5;
 
     const sounds = {
         click: new Audio('/sounds/click.mp3'),
@@ -70,17 +74,15 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     sounds.menuMusic.loop = true;
-    sounds.menuMusic.volume = menuMusicVolume; // Apply initial menu music volume
+    sounds.menuMusic.volume = menuMusicVolume;
 
     function updateMuteButtonAppearance() {
         if (muteBtn) {
             muteBtn.textContent = isMuted ? 'Unmute' : 'Mute';
             if (isMuted) {
-                // Style for Muted state (e.g., red background)
                 muteBtn.classList.remove('bg-sky-600', 'hover:bg-sky-700');
                 muteBtn.classList.add('bg-red-600', 'hover:bg-red-700');
             } else {
-                // Style for Unmuted state (e.g., sky blue background)
                 muteBtn.classList.remove('bg-red-600', 'hover:bg-red-700');
                 muteBtn.classList.add('bg-sky-600', 'hover:bg-sky-700');
             }
@@ -89,7 +91,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function toggleMute() {
         isMuted = !isMuted;
-        updateMuteButtonAppearance(); // Update text and style
+        updateMuteButtonAppearance();
         if (isMuted) {
             stopMenuMusic();
         } else {
@@ -103,16 +105,15 @@ document.addEventListener('DOMContentLoaded', () => {
         console.log('[DEBUG] Mute toggled. isMuted:', isMuted);
     }
 
-
     function playSound(soundName) {
-        if (isMuted && soundName !== 'click') return; // Allow click sound even when muted, or remove '&& soundName !== 'click'' to mute all
-        if (isMuted && soundName === 'click' && sounds[soundName]) { // Special handling for click if allowed when muted
-            sounds[soundName].volume = soundEffectsVolume * 0.5; // Play click softer if muted but allowed
+        if (isMuted && soundName !== 'click') return;
+        if (isMuted && soundName === 'click' && sounds[soundName]) {
+            sounds[soundName].volume = soundEffectsVolume * 0.5;
             sounds[soundName].currentTime = 0;
             sounds[soundName].play().catch(error => console.log(`Error playing sound ${soundName}:`, error));
             return;
         }
-        if (isMuted) return; // If not click, and muted, do nothing.
+        if (isMuted) return;
 
         const sound = sounds[soundName];
         if (sound) {
@@ -130,7 +131,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function startMenuMusic() {
         if (isMuted) return;
-
         sounds.menuMusic.volume = menuMusicVolume;
         if (sounds.menuMusic.paused) {
             sounds.menuMusic.play().catch(error => console.log("Error playing menu music:", error));
@@ -142,7 +142,6 @@ document.addEventListener('DOMContentLoaded', () => {
         sounds.menuMusic.currentTime = 0;
     }
 
-    // ... (rest of the showScreen, displayError, showGlobalNotification, populateCategorySelector, handleCategoryChange, updatePlayerList, updateLiveScores functions remain the same as the previous version) ...
     function showScreen(screenElement) {
         console.log('[DEBUG] showScreen called for:', screenElement ? screenElement.id : 'undefined element');
         [lobbyConnectContainer, lobbyWaitingRoom, quizContainer, gameOverContainer].forEach(s => s.classList.add('hidden'));
@@ -154,12 +153,26 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         if (screenElement === lobbyConnectContainer || screenElement === lobbyWaitingRoom || screenElement === gameOverContainer) {
-            startMenuMusic(); // This will respect the isMuted state
+            startMenuMusic();
         } else {
             stopMenuMusic();
         }
+
+        // Manage host pause button visibility
+        if (screenElement === quizContainer) {
+            if (isHost && hostTogglePauseBtn) {
+                hostTogglePauseBtn.classList.remove('hidden');
+                hostTogglePauseBtn.disabled = false; // Ensure it's enabled when shown
+            } else if (hostTogglePauseBtn) {
+                hostTogglePauseBtn.classList.add('hidden');
+            }
+        } else {
+            if (hostTogglePauseBtn) hostTogglePauseBtn.classList.add('hidden');
+            if (gamePausedOverlay) gamePausedOverlay.classList.add('hidden');
+        }
     }
 
+    // ... (displayError, showGlobalNotification, populateCategorySelector, handleCategoryChange, updatePlayerList, updateLiveScores functions remain the same)
     function displayError(element, message, duration = 3000) {
         if(element) {
             element.textContent = message;
@@ -424,13 +437,22 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (muteBtn) {
         muteBtn.addEventListener('click', () => {
-            playSound('click'); // Play click sound before toggling mute state
+            playSound('click');
             toggleMute();
         });
     }
 
+    if (hostTogglePauseBtn) {
+        hostTogglePauseBtn.addEventListener('click', () => {
+            playSound('click');
+            console.log('[DEBUG] Host toggle pause BTN CLICKED. isHost:', isHost, 'currentLobbyId:', currentLobbyId, 'isGamePaused (client-side):', isGamePaused);
+            if (currentLobbyId && isHost) {
+                socket.emit('hostTogglePause', { lobbyId: currentLobbyId });
+            }
+        });
+    }
+
     // --- Socket.IO Event Handlers ---
-    // ... (socket event handlers like 'connect', 'disconnect', 'lobbyCreated', etc. remain largely the same as the previous version) ...
     socket.on('connect', () => {
         console.log('[DEBUG] Connected to server with ID:', socket.id);
         if(createLobbyBtn) createLobbyBtn.disabled = false;
@@ -445,6 +467,10 @@ document.addEventListener('DOMContentLoaded', () => {
         console.log('[DEBUG] Vom Server getrennt:', reason);
         showGlobalNotification('Vom Server getrennt. Versuche erneut zu verbinden...', 'error', 5000);
         stopMenuMusic();
+        if (isGamePaused && gamePausedOverlay) {
+            gamePausedOverlay.classList.add('hidden');
+            isGamePaused = false;
+        }
     });
 
     socket.on('lobbyCreated', (data) => {
@@ -480,6 +506,13 @@ document.addEventListener('DOMContentLoaded', () => {
             stopMenuMusic();
             if (gameCategoryDisplay && data.selectedCategory) {
                 gameCategoryDisplay.textContent = data.selectedCategory;
+            }
+            if (data.isPaused) {
+                isGamePaused = true;
+                if(gamePausedOverlay) gamePausedOverlay.classList.remove('hidden');
+                if(pauseResumeMessage) pauseResumeMessage.textContent = isHost ? "Du hast das Spiel pausiert. Klicke 'Fortsetzen'." : "Das Spiel ist pausiert. Warte auf den Host.";
+                if(hostTogglePauseBtn) hostTogglePauseBtn.textContent = 'Fortsetzen';
+                if(optionsContainer) optionsContainer.querySelectorAll('.option-btn').forEach(btn => btn.disabled = true);
             }
         }
     });
@@ -549,6 +582,14 @@ document.addEventListener('DOMContentLoaded', () => {
         if (newHost) {
             showGlobalNotification(`${newHost.name} ist jetzt der Host.`, 'info', 3000);
         }
+        if (quizContainer && !quizContainer.classList.contains('hidden')) {
+            if (isHost && hostTogglePauseBtn) {
+                hostTogglePauseBtn.classList.remove('hidden');
+                hostTogglePauseBtn.disabled = false; // Ensure enabled for new host
+            } else if (hostTogglePauseBtn) {
+                hostTogglePauseBtn.classList.add('hidden');
+            }
+        }
     });
 
     socket.on('gameStarted', (data) => {
@@ -557,9 +598,24 @@ document.addEventListener('DOMContentLoaded', () => {
         playSound('gameStart');
         if(gameCategoryDisplay) gameCategoryDisplay.textContent = data.category || "Unbekannt";
         showScreen(quizContainer);
+        isGamePaused = false;
+        if(gamePausedOverlay) gamePausedOverlay.classList.add('hidden');
+        if(hostTogglePauseBtn) {
+            hostTogglePauseBtn.textContent = 'Pause Spiel';
+            hostTogglePauseBtn.disabled = !isHost; // Disable if not host, enable if host
+        }
     });
 
     socket.on('newQuestion', (data) => {
+        if (isGamePaused) {
+            isGamePaused = false;
+            if(gamePausedOverlay) gamePausedOverlay.classList.add('hidden');
+            if(hostTogglePauseBtn && isHost) {
+                hostTogglePauseBtn.textContent = 'Pause Spiel';
+                hostTogglePauseBtn.disabled = false;
+            }
+        }
+
         playSound('newQuestion');
         currentQuestionIndex = data.questionIndex;
         questionTimeLimit = data.timeLimit;
@@ -586,6 +642,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const button = document.createElement('button');
                 button.textContent = optionText;
                 button.classList.add('option-btn');
+                button.disabled = isGamePaused;
                 button.addEventListener('click', () => {
                     playSound('click');
                     optionsContainer.querySelectorAll('.option-btn').forEach(btn => {
@@ -607,9 +664,9 @@ document.addEventListener('DOMContentLoaded', () => {
         if(feedbackText) feedbackText.textContent = '';
         if(waitingForOthersMsg) waitingForOthersMsg.textContent = '';
         if(timerDisplay) {
-            timerDisplay.textContent = `${questionTimeLimit}s`;
-            timerDisplay.classList.remove('text-red-500', 'text-amber-400');
-            timerDisplay.classList.add('text-amber-400');
+            timerDisplay.textContent = isGamePaused ? 'Pausiert' : `${questionTimeLimit}s`;
+            timerDisplay.classList.remove('text-red-500'); // Reset color
+            if (!isGamePaused) timerDisplay.classList.add('text-amber-400');
         }
     });
 
@@ -623,6 +680,10 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     socket.on('timerUpdate', (timeLeft) => {
+        if (isGamePaused) { // If game is paused, show "Pausiert" instead of countdown
+            if(timerDisplay) timerDisplay.textContent = `Pausiert`; // Keep it simple
+            return;
+        }
         if(!timerDisplay) return;
         timerDisplay.textContent = `${timeLeft}s`;
         if (timeLeft <= 5 && timeLeft > 0) {
@@ -633,6 +694,9 @@ document.addEventListener('DOMContentLoaded', () => {
             if(feedbackText) feedbackText.textContent = "Zeit abgelaufen!";
             if(waitingForOthersMsg) waitingForOthersMsg.textContent = "Antwort wird aufgedeckt...";
             if(optionsContainer) optionsContainer.querySelectorAll('.option-btn').forEach(btn => btn.disabled = true);
+        } else {
+            timerDisplay.classList.remove('text-red-500');
+            timerDisplay.classList.add('text-amber-400');
         }
     });
 
@@ -669,7 +733,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     socket.on('questionOver', (data) => {
-        if (timerDisplay && timerDisplay.textContent === "0s") {
+        if (timerDisplay && timerDisplay.textContent === "0s" && !isGamePaused) {
             playSound('timesUp');
         }
 
@@ -692,6 +756,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     socket.on('gameOver', (data) => {
         stopMenuMusic();
+        isGamePaused = false;
+        if(gamePausedOverlay) gamePausedOverlay.classList.add('hidden');
+
         if(finalScoresDiv) {
             finalScoresDiv.innerHTML = '';
             data.finalScores.forEach((player, index) => {
@@ -729,14 +796,60 @@ document.addEventListener('DOMContentLoaded', () => {
         allAvailableCategoriesCache = Array.isArray(data.availableCategories) ? [...data.availableCategories] : [];
         updatePlayerList(data.players, allAvailableCategoriesCache, data.selectedCategory);
         showScreen(lobbyWaitingRoom);
+        isGamePaused = false;
+        if(gamePausedOverlay) gamePausedOverlay.classList.add('hidden');
+        if(hostTogglePauseBtn) {
+            hostTogglePauseBtn.textContent = 'Pause Spiel';
+            hostTogglePauseBtn.disabled = !isHost;
+        }
+
         if(lobbyMessage) lobbyMessage.textContent = isHost ? "Spiel zurückgesetzt. Wähle Kategorie und starte!" : "Host hat das Spiel zurückgesetzt. Warte auf Start...";
         if(startGameLobbyBtn) startGameLobbyBtn.disabled = !isHost || !categorySelect.value;
         if(playAgainHostBtn) playAgainHostBtn.disabled = false;
     });
 
+    socket.on('gamePaused', (data) => {
+        console.log('[DEBUG] gamePaused event received. Remaining time:', data.remainingTime);
+        isGamePaused = true;
+        if(gamePausedOverlay) gamePausedOverlay.classList.remove('hidden');
+        if(pauseResumeMessage) pauseResumeMessage.textContent = isHost ? "Du hast das Spiel pausiert. Klicke 'Fortsetzen'." : "Das Spiel ist pausiert. Warte auf den Host.";
+        if(hostTogglePauseBtn && isHost) {
+            hostTogglePauseBtn.textContent = 'Fortsetzen';
+            hostTogglePauseBtn.disabled = false; // Ensure host can click it
+        }
+
+        if(optionsContainer) optionsContainer.querySelectorAll('.option-btn').forEach(btn => btn.disabled = true);
+        if(timerDisplay && data.remainingTime !== undefined) timerDisplay.textContent = `Pausiert (${Math.ceil(data.remainingTime)}s)`;
+        else if(timerDisplay) timerDisplay.textContent = 'Pausiert';
+    });
+
+    socket.on('gameResumed', () => {
+        console.log('[DEBUG] gameResumed event received.');
+        isGamePaused = false;
+        if(gamePausedOverlay) gamePausedOverlay.classList.add('hidden');
+
+        if(hostTogglePauseBtn && isHost) {
+            hostTogglePauseBtn.textContent = 'Pause Spiel';
+            hostTogglePauseBtn.disabled = false; // Ensure host can click it
+        }
+
+        if(optionsContainer) {
+            optionsContainer.querySelectorAll('.option-btn').forEach(btn => {
+                const isAnswered = btn.classList.contains('selected') ||
+                    btn.classList.contains('correct') ||
+                    btn.classList.contains('incorrect-picked') ||
+                    btn.classList.contains('reveal-correct');
+                if (!isAnswered) {
+                    btn.disabled = false;
+                }
+            });
+        }
+        console.log('[DEBUG] gameResumed: UI updated for resume.');
+    });
+
     // Initial setup
     showScreen(lobbyConnectContainer);
-    updateMuteButtonAppearance(); // Set initial mute button text and style
+    updateMuteButtonAppearance();
     const savedPlayerName = localStorage.getItem('quizPlayerName');
     if (savedPlayerName && playerNameInput) {
         playerNameInput.value = savedPlayerName;
