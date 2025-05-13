@@ -241,16 +241,16 @@ The game uses:
 ### Common Issues:
 
 1. **Questions not loading**
-    - Check `questions.json` format
-    - Verify file permissions
+   - Check `questions.json` format
+   - Verify file permissions
 
 2. **Socket connection failed**
-    - Ensure port 3000 is available
-    - Check firewall settings
+   - Ensure port 3000 is available
+   - Check firewall settings
 
 3. **Audio not working**
-    - User interaction required for audio playback
-    - Check browser permissions
+   - User interaction required for audio playback
+   - Check browser permissions
 
 ### Debug Mode:
 
