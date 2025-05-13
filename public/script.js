@@ -4,7 +4,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const socket = io();
 
     // --- DOM Elements ---
-    // ... (keep existing DOM element selections)
     const lobbyConnectContainer = document.getElementById('lobby-connect-container');
     const playerNameInput = document.getElementById('player-name');
     const createLobbyBtn = document.getElementById('create-lobby-btn');
@@ -50,7 +49,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
     // --- Game State Variables ---
-    // ... (keep existing game state variables)
     let currentLobbyId = null;
     let currentPlayerId = null;
     let currentQuestionIndex = -1;
@@ -63,7 +61,6 @@ document.addEventListener('DOMContentLoaded', () => {
     let wasTimedOut = false;
 
     // --- Speech Synthesis ---
-    // ... (keep existing speech synthesis setup)
     console.log('[DEBUG] Initializing Speech Synthesis...');
     const synth = window.speechSynthesis;
     let voices = [];
@@ -76,11 +73,10 @@ document.addEventListener('DOMContentLoaded', () => {
     if (synth.onvoiceschanged !== undefined) {
         synth.onvoiceschanged = populateVoices;
     }
-    populateVoices();
+    populateVoices(); // Call once initially
     console.log('[DEBUG] Speech Synthesis initialized. Synth object:', synth);
 
     // --- Sound Effects ---
-    // ... (keep existing sound effects setup)
     const soundEffectsVolume = 0.3;
     const menuMusicVolume = 0.5;
 
@@ -98,17 +94,15 @@ document.addEventListener('DOMContentLoaded', () => {
     sounds.menuMusic.loop = true;
     sounds.menuMusic.volume = menuMusicVolume;
 
-    // --- Helper Functions (keep existing ones like updateMuteButtonAppearance, speak, playSound, etc.) ---
-    // ...
+    // --- Helper Functions ---
     function updateMuteButtonAppearance() {
         if (muteBtn) {
             muteBtn.textContent = isMuted ? 'Unmute' : 'Mute';
+            const baseClasses = 'fixed bottom-5 right-5 text-white font-semibold py-2 px-4 rounded-lg shadow-md z-50 transition-all duration-300 opacity-80 hover:opacity-100';
             if (isMuted) {
-                muteBtn.classList.remove('bg-sky-600', 'hover:bg-sky-700');
-                muteBtn.classList.add('bg-red-600', 'hover:bg-red-700');
+                muteBtn.className = baseClasses + ' bg-red-600 hover:bg-red-700';
             } else {
-                muteBtn.classList.remove('bg-red-600', 'hover:bg-red-700');
-                muteBtn.classList.add('bg-sky-600', 'hover:bg-sky-700');
+                muteBtn.className = baseClasses + ' bg-sky-600 hover:bg-sky-700';
             }
         }
     }
@@ -116,41 +110,52 @@ document.addEventListener('DOMContentLoaded', () => {
     function speak(text, lang = 'de-DE', onEndCallback = null, isQuestion = false) {
         if (isMuted || !synth || !text) {
             console.log(`[DEBUG] TTS (${isQuestion ? 'Question' : 'Text'}): Muted, synth not available, or no text. Skipping speech.`);
-            if (onEndCallback) onEndCallback();
+            if (onEndCallback) onEndCallback(); // Call callback immediately if muted/unavailable
             return;
         }
 
+        // Cancel previous speech *before* starting new one
         if (synth.speaking) {
             console.log(`[DEBUG] TTS (${isQuestion ? 'Question' : 'Text'}): Cancelling previous speech.`);
             synth.cancel();
         }
 
+        // Short delay to ensure cancellation completes before speaking again
         setTimeout(() => {
             currentSpeechUtterance = new SpeechSynthesisUtterance(text);
             currentSpeechUtterance.lang = lang;
 
-            const targetVoice = voices.find(voice => voice.lang === lang && voice.name.toLowerCase().includes('german'));
+            // Attempt to find a German voice explicitly
+            let targetVoice = voices.find(voice => voice.lang === lang && voice.name.toLowerCase().includes('german'));
+            if (!targetVoice) {
+                // Fallback to first available voice for the language
+                targetVoice = voices.find(voice => voice.lang === lang);
+            }
+            if (!targetVoice && voices.length > 0) {
+                // Fallback to the default voice if no language match
+                targetVoice = voices.find(voice => voice.default);
+            }
+
             if (targetVoice) {
                 currentSpeechUtterance.voice = targetVoice;
             } else {
-                const defaultLangVoice = voices.find(voice => voice.lang === lang);
-                if (defaultLangVoice) currentSpeechUtterance.voice = defaultLangVoice;
+                console.warn(`[DEBUG] TTS: No suitable voice found for lang '${lang}'. Using browser default.`);
             }
 
             currentSpeechUtterance.onend = () => {
-                console.log(`[DEBUG] TTS (${isQuestion ? 'Question' : 'Text'}): Finished speaking - `, text);
+                console.log(`[DEBUG] TTS (${isQuestion ? 'Question' : 'Text'}): Finished speaking - `, text.substring(0, 30) + "...");
                 currentSpeechUtterance = null;
                 if (onEndCallback) onEndCallback();
             };
             currentSpeechUtterance.onerror = (event) => {
                 console.error(`[DEBUG] TTS (${isQuestion ? 'Question' : 'Text'}): Error - `, event);
                 currentSpeechUtterance = null;
-                if (onEndCallback) onEndCallback();
+                if (onEndCallback) onEndCallback(); // Also call callback on error
             };
 
-            console.log(`[DEBUG] TTS (${isQuestion ? 'Question' : 'Text'}): Attempting to speak:`, text, 'with voice:', currentSpeechUtterance.voice ? currentSpeechUtterance.voice.name : 'default');
+            console.log(`[DEBUG] TTS (${isQuestion ? 'Question' : 'Text'}): Attempting to speak:`, text.substring(0, 30) + "...", 'with voice:', currentSpeechUtterance.voice ? currentSpeechUtterance.voice.name : 'default');
             synth.speak(currentSpeechUtterance);
-        }, 100);
+        }, 100); // 100ms delay
     }
 
 
@@ -163,7 +168,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 console.log('[DEBUG] TTS: Muting, cancelling speech.');
                 synth.cancel();
             }
+            // Mute existing sounds? Not easily done without Web Audio API nodes
         } else {
+            // Unmuting - maybe restart music if appropriate
             const currentScreenElement = [lobbyConnectContainer, lobbyWaitingRoom, gameOverContainer].find(
                 s => s && !s.classList.contains('hidden')
             );
@@ -175,18 +182,19 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function playSound(soundName) {
-        if (isMuted && soundName !== 'click') return;
+        // Allow click sound even when muted, but quieter
         if (isMuted && soundName === 'click' && sounds[soundName]) {
-            sounds[soundName].volume = soundEffectsVolume * 0.5;
+            sounds[soundName].volume = soundEffectsVolume * 0.3; // Quieter click when muted
             sounds[soundName].currentTime = 0;
-            sounds[soundName].play().catch(error => console.log(`Error playing sound ${soundName}:`, error));
+            sounds[soundName].play().catch(error => console.log(`Error playing muted click ${soundName}:`, error));
             return;
         }
-        if (isMuted) return;
+
+        if (isMuted) return; // Don't play other sounds if muted
 
         const sound = sounds[soundName];
         if (sound) {
-            sound.currentTime = 0;
+            sound.currentTime = 0; // Reset playback to start
             if (soundName !== 'menuMusic') {
                 sound.volume = soundEffectsVolume;
             } else {
@@ -214,8 +222,9 @@ document.addEventListener('DOMContentLoaded', () => {
     function showScreen(screenElement) {
         console.log('[DEBUG] showScreen called for:', screenElement ? screenElement.id : 'undefined element');
 
-        if (synth && synth.speaking && screenElement !== quizContainer) {
-            console.log('[DEBUG] TTS: Screen changed, cancelling speech.');
+        // Stop speech only if changing away from quiz screen or to game over
+        if (synth && synth.speaking && (screenElement !== quizContainer || screenElement === gameOverContainer)) {
+            console.log('[DEBUG] TTS: Screen changed away from quiz or to game over, cancelling speech.');
             synth.cancel();
         }
 
@@ -226,50 +235,57 @@ document.addEventListener('DOMContentLoaded', () => {
             screenElement.classList.remove('hidden');
         } else {
             console.error("[DEBUG] showScreen: screenElement is null or undefined!");
-            return;
+            return; // Exit if screenElement is invalid
         }
 
+        // Music control based on screen
         if (screenElement === lobbyConnectContainer || screenElement === lobbyWaitingRoom || screenElement === gameOverContainer) {
             startMenuMusic();
         } else {
             stopMenuMusic();
         }
 
+        // Host control visibility
         if (screenElement === quizContainer) {
             if (isHost && hostTogglePauseBtn) {
                 hostTogglePauseBtn.classList.remove('hidden');
                 hostTogglePauseBtn.disabled = false;
-                hostTogglePauseBtn.textContent = 'Pause Spiel';
+                hostTogglePauseBtn.textContent = isGamePaused ? 'Fortsetzen' : 'Pause Spiel'; // Update text based on actual pause state
             } else if (hostTogglePauseBtn) {
                 hostTogglePauseBtn.classList.add('hidden');
             }
         } else {
             if (hostTogglePauseBtn) hostTogglePauseBtn.classList.add('hidden');
-            if (gamePausedOverlay) gamePausedOverlay.classList.add('hidden');
+            if (gamePausedOverlay) gamePausedOverlay.classList.add('hidden'); // Ensure pause overlay is hidden if not on quiz screen
         }
     }
 
     function displayError(element, message, duration = 3000) {
         if(element) {
             element.textContent = message;
-            setTimeout(() => { element.textContent = ''; }, duration);
+            if (duration > 0) {
+                setTimeout(() => { element.textContent = ''; }, duration);
+            }
         } else {
             console.warn("[DEBUG] displayError: element is null for message:", message);
+            showGlobalNotification(message, 'error', duration); // Fallback to global notification
         }
     }
 
     function showGlobalNotification(message, type = 'error', duration = 3000) {
         if(globalNotification) {
             globalNotification.textContent = message;
-            globalNotification.className = 'fixed top-5 right-5 p-4 rounded-lg shadow-xl text-sm z-50 animate-pulse';
+            globalNotification.className = 'fixed top-5 right-5 p-4 rounded-lg shadow-xl text-sm z-50 animate-pulse'; // Base classes
             if (type === 'error') globalNotification.classList.add('bg-red-500', 'text-white');
             else if (type === 'success') globalNotification.classList.add('bg-green-500', 'text-white');
-            else globalNotification.classList.add('bg-sky-500', 'text-white');
+            else globalNotification.classList.add('bg-sky-500', 'text-white'); // Default/info
 
             globalNotification.classList.remove('hidden');
             setTimeout(() => {
                 globalNotification.classList.add('hidden');
             }, duration);
+        } else {
+            console.log(`[GLOBAL NOTIFICATION / ${type}]: ${message}`); // Log if element not found
         }
     }
 
@@ -284,7 +300,7 @@ document.addEventListener('DOMContentLoaded', () => {
         allAvailableCategoriesCache = Array.isArray(categories) ? [...categories] : [];
         console.log('[DEBUG] populateCategorySelector - allAvailableCategoriesCache updated:', JSON.stringify(allAvailableCategoriesCache));
 
-        categorySelect.innerHTML = '';
+        categorySelect.innerHTML = ''; // Clear existing options
 
         if (allAvailableCategoriesCache.length === 0) {
             const option = document.createElement('option');
@@ -292,41 +308,45 @@ document.addEventListener('DOMContentLoaded', () => {
             option.textContent = "Keine Kategorien verfügbar";
             categorySelect.appendChild(option);
             categorySelect.disabled = true;
-            console.warn('[DEBUG] populateCategorySelector - No categories available for dropdown (allAvailableCategoriesCache is empty).');
+            console.warn('[DEBUG] populateCategorySelector - No categories available.');
             if(chosenCategoryDisplay) chosenCategoryDisplay.classList.add('hidden');
             return;
         }
 
+        // Add default placeholder option
         const defaultOption = document.createElement('option');
         defaultOption.value = "";
         defaultOption.textContent = "-- Kategorie auswählen --";
-        defaultOption.disabled = true;
-        defaultOption.selected = !selectedCategoryKey;
+        defaultOption.disabled = true; // Makes it unselectable after choosing another
+        defaultOption.selected = !selectedCategoryKey; // Select if no category is pre-selected
         categorySelect.appendChild(defaultOption);
         console.log('[DEBUG] populateCategorySelector - Added default option.');
 
+        // Add actual category options
         allAvailableCategoriesCache.forEach(categoryKey => {
             const option = document.createElement('option');
             option.value = categoryKey;
-            option.textContent = categoryKey;
+            option.textContent = categoryKey; // Display the key itself as the text
             if (selectedCategoryKey && categoryKey === selectedCategoryKey) {
-                option.selected = true;
+                option.selected = true; // Pre-select if a category is already chosen
             }
             categorySelect.appendChild(option);
         });
-        console.log('[DEBUG] populateCategorySelector - Added all category options. Current HTML:', categorySelect.innerHTML);
+        console.log('[DEBUG] populateCategorySelector - Added all category options.');
 
+        // Update state and display based on selection
         if (selectedCategoryKey && allAvailableCategoriesCache.includes(selectedCategoryKey)) {
             currentSelectedCategoryKey = selectedCategoryKey;
-            categorySelect.value = selectedCategoryKey;
+            categorySelect.value = selectedCategoryKey; // Ensure dropdown reflects the value
             if(currentCategoryText) currentCategoryText.textContent = selectedCategoryKey;
             if(chosenCategoryDisplay) chosenCategoryDisplay.classList.remove('hidden');
         } else {
-            currentSelectedCategoryKey = null;
-            categorySelect.value = "";
+            currentSelectedCategoryKey = null; // Reset if selected category is invalid or none
+            categorySelect.value = ""; // Reset dropdown to placeholder
             if(currentCategoryText) currentCategoryText.textContent = "";
             if(chosenCategoryDisplay) chosenCategoryDisplay.classList.add('hidden');
         }
+        categorySelect.disabled = !isHost; // Enable/disable based on host status
 
         console.log('[DEBUG] populateCategorySelector - END. currentSelectedCategoryKey:', currentSelectedCategoryKey, 'categorySelect.value:', categorySelect.value);
     }
@@ -337,8 +357,12 @@ document.addEventListener('DOMContentLoaded', () => {
             currentSelectedCategoryKey = categorySelect.value || null;
             console.log('[DEBUG] handleCategoryChange - Host selected category:', currentSelectedCategoryKey);
 
-            if (currentLobbyId) {
+            if (currentLobbyId && currentSelectedCategoryKey) { // Only emit if a valid category is selected
                 socket.emit('hostSelectedCategory', { lobbyId: currentLobbyId, categoryKey: currentSelectedCategoryKey });
+            } else if (!currentSelectedCategoryKey){
+                console.log('[DEBUG] handleCategoryChange - Host selected placeholder, no category emitted.');
+                // Optionally emit null to sync others if needed:
+                // socket.emit('hostSelectedCategory', { lobbyId: currentLobbyId, categoryKey: null });
             } else {
                 console.warn("[DEBUG] handleCategoryChange: currentLobbyId is null, cannot emit selection.");
             }
@@ -347,6 +371,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if(startGameLobbyBtn) startGameLobbyBtn.disabled = !currentSelectedCategoryKey || playerCount < 1;
             console.log('[DEBUG] handleCategoryChange - Start Game Button Disabled:', startGameLobbyBtn ? startGameLobbyBtn.disabled : 'N/A');
 
+            // Update the display text
             if (currentSelectedCategoryKey) {
                 if(currentCategoryText) currentCategoryText.textContent = currentSelectedCategoryKey;
                 if(chosenCategoryDisplay) chosenCategoryDisplay.classList.remove('hidden');
@@ -356,6 +381,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         } else {
             console.log('[DEBUG] handleCategoryChange - Not host, no action taken for emission.');
+            // Non-host UI should have already been updated by 'categoryUpdatedByHost' event
         }
     }
 
@@ -366,7 +392,7 @@ document.addEventListener('DOMContentLoaded', () => {
             console.error("[DEBUG] updatePlayerList: playerListLobby element not found!");
             return;
         }
-        playerListLobby.innerHTML = '';
+        playerListLobby.innerHTML = ''; // Clear previous list
 
         const me = players.find(p => p.id === currentPlayerId);
         if (me) {
@@ -374,64 +400,69 @@ document.addEventListener('DOMContentLoaded', () => {
             console.log('[DEBUG] updatePlayerList - Updated local isHost to:', isHost);
         } else {
             console.warn('[DEBUG] updatePlayerList - Current player not found in player list. Assuming not host.');
-            isHost = false;
+            isHost = false; // Default to not host if player data is missing
         }
 
+        // Populate player list display
         players.forEach(player => {
             const playerDiv = document.createElement('div');
-            playerDiv.className = 'player-entry';
+            playerDiv.className = 'player-entry flex justify-between items-center bg-slate-600/50 p-3 rounded-md shadow'; // Use flex for alignment
             let nameDisplay = player.name;
             if (player.id === currentPlayerId) {
                 nameDisplay += ' (Du)';
-                if (player.isHost) {
-                    playerDiv.classList.add('current-player-highlight');
+                if (player.isHost) { // Highlight current player if they are also host
+                    // Maybe add a specific class or style here if needed
+                    playerDiv.classList.add('border-l-4', 'border-sky-400', 'pl-2'); // Example highlight
                 }
             }
-            playerDiv.innerHTML = `<span class="player-name">${nameDisplay}</span>${player.isHost ? '<span class="player-host-badge">Host</span>' : ''}`;
+            playerDiv.innerHTML = `<span class="player-name font-medium">${nameDisplay}</span>${player.isHost ? '<span class="player-host-badge ml-2 bg-sky-500 text-white text-xs font-semibold px-2 py-0.5 rounded-full">Host</span>' : ''}`;
             playerListLobby.appendChild(playerDiv);
         });
         console.log('[DEBUG] updatePlayerList - Player list populated.');
 
+        // Determine categories to show in dropdown
         const categoriesForDropdown = (Array.isArray(initialLobbyCategories) && initialLobbyCategories.length > 0)
             ? initialLobbyCategories
-            : allAvailableCategoriesCache;
+            : allAvailableCategoriesCache; // Fallback to cached categories if none provided initially
 
         console.log('[DEBUG] updatePlayerList - categoriesForDropdown determined as:', JSON.stringify(categoriesForDropdown));
 
+        // Populate and configure category selector
         if (categorySelectionContainer) {
             if (categoriesForDropdown && categoriesForDropdown.length > 0) {
                 categorySelectionContainer.classList.remove('hidden');
                 console.log('[DEBUG] updatePlayerList - Category selection container UNHIDDEN.');
-                populateCategorySelector(categoriesForDropdown, currentCatFromServer || currentSelectedCategoryKey);
+                // Use the category provided by the server if available, otherwise fallback to local state
+                populateCategorySelector(categoriesForDropdown, currentCatFromServer !== null ? currentCatFromServer : currentSelectedCategoryKey);
             } else {
-                categorySelectionContainer.classList.add('hidden');
+                categorySelectionContainer.classList.add('hidden'); // Hide if no categories
                 console.log('[DEBUG] updatePlayerList - No categories to display, category selection container HIDDEN.');
             }
         } else {
             console.error("[DEBUG] updatePlayerList: categorySelectionContainer element not found!");
         }
 
-        if (categorySelect) {
-            categorySelect.disabled = !isHost;
-            console.log('[DEBUG] updatePlayerList - Category select disabled state set to:', categorySelect.disabled);
-        } else {
-            console.error("[DEBUG] updatePlayerList: categorySelect element not found for disabling!");
-        }
-
+        // Adjust UI based on host status
         if (isHost) {
             if(lobbyMessage) lobbyMessage.textContent = "Du bist der Host. Wähle eine Kategorie und starte das Spiel.";
             if(startGameLobbyBtn) {
                 startGameLobbyBtn.classList.remove('hidden');
                 const playerCount = playerListLobby.children.length;
+                // Disable start if no category selected OR fewer than 1 player (host included)
                 startGameLobbyBtn.disabled = !categorySelect.value || playerCount < 1;
                 console.log('[DEBUG] updatePlayerList - Host UI updated. Start button unhidden. Disabled:', startGameLobbyBtn.disabled);
             }
-        } else {
-            if(lobbyMessage) lobbyMessage.textContent = "Warte, bis der Host das Spiel startet oder eine Kategorie wählt...";
-            if(startGameLobbyBtn) startGameLobbyBtn.classList.add('hidden');
+            if (categorySelect) categorySelect.disabled = false; // Ensure host can select
 
-            if (currentCatFromServer) {
-                if(currentCategoryText) currentCategoryText.textContent = currentCatFromServer;
+        } else { // Non-host UI
+            if(lobbyMessage) lobbyMessage.textContent = "Warte, bis der Host das Spiel startet oder eine Kategorie wählt...";
+            if(startGameLobbyBtn) startGameLobbyBtn.classList.add('hidden'); // Hide start button for non-hosts
+            if (categorySelect) categorySelect.disabled = true; // Disable category selection for non-hosts
+
+            // Display the category chosen by the host
+            const categoryToShow = currentCatFromServer !== null ? currentCatFromServer : currentSelectedCategoryKey;
+            if (categoryToShow) {
+                if(currentCategoryText) currentCategoryText.textContent = categoryToShow;
                 if(chosenCategoryDisplay) chosenCategoryDisplay.classList.remove('hidden');
             } else {
                 if(chosenCategoryDisplay) chosenCategoryDisplay.classList.add('hidden');
@@ -441,15 +472,16 @@ document.addEventListener('DOMContentLoaded', () => {
         console.log('[DEBUG] updatePlayerList - END.');
     }
 
+
     function updateLiveScores(scoresData) {
         if (!liveScoresList) return;
-        liveScoresList.innerHTML = '';
-        const sortedScores = [...scoresData].sort((a, b) => b.score - a.score);
+        liveScoresList.innerHTML = ''; // Clear previous scores
+        const sortedScores = [...scoresData].sort((a, b) => b.score - a.score); // Sort by score descending
         sortedScores.forEach(player => {
             const scoreDiv = document.createElement('div');
-            scoreDiv.className = 'player-entry-quiz';
+            scoreDiv.className = 'player-entry-quiz'; // Use base class from style.css
             if (player.id === currentPlayerId) {
-                scoreDiv.classList.add('current-player-highlight');
+                scoreDiv.classList.add('current-player-highlight'); // Highlight current player
             }
 
             let displayName = player.name;
@@ -466,25 +498,26 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // --- Event Listeners for UI ---
-    // ... (keep existing UI event listeners for createLobbyBtn, joinLobbyBtn, etc.)
     if(createLobbyBtn) createLobbyBtn.addEventListener('click', () => {
         playSound('click');
-        const playerName = playerNameInput.value.trim() || 'AnonSpieler';
+        const playerName = playerNameInput.value.trim() || `Anon_${Math.random().toString(36).substring(2, 6)}`; // Default name if empty
+        localStorage.setItem('quizPlayerName', playerName); // Save name
         socket.emit('createLobby', playerName);
-        createLobbyBtn.disabled = true;
+        createLobbyBtn.disabled = true; // Disable buttons after action
         if(joinLobbyBtn) joinLobbyBtn.disabled = true;
     });
 
     if(joinLobbyBtn) joinLobbyBtn.addEventListener('click', () => {
         playSound('click');
         const lobbyId = lobbyIdInput.value.trim().toUpperCase();
-        const playerName = playerNameInput.value.trim() || 'AnonSpieler';
-        if (lobbyId) {
+        const playerName = playerNameInput.value.trim() || `Anon_${Math.random().toString(36).substring(2, 6)}`; // Default name if empty
+        localStorage.setItem('quizPlayerName', playerName); // Save name
+        if (lobbyId && lobbyId.length === 6) { // Basic validation for Lobby ID format
             socket.emit('joinLobby', { lobbyId, playerName });
             if(createLobbyBtn) createLobbyBtn.disabled = true;
             joinLobbyBtn.disabled = true;
         } else {
-            displayError(connectErrorMsg, 'Bitte gib eine Lobby ID ein.');
+            displayError(connectErrorMsg, 'Bitte gib eine gültige 6-stellige Lobby ID ein.');
         }
     });
 
@@ -507,9 +540,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 displayError(startGameErrorMsg, "Bitte wähle eine Fragenkategorie aus.");
                 return;
             }
-            console.log(`[DEBUG] startGameLobbyBtn click - Emitting startGame with category: ${currentSelectedCategoryKey} (from dropdown: ${selectedCategoryFromDropdown})`);
+            // Ensure local state matches dropdown before emitting
+            currentSelectedCategoryKey = selectedCategoryFromDropdown;
+            console.log(`[DEBUG] startGameLobbyBtn click - Emitting startGame with category: ${currentSelectedCategoryKey}`);
             socket.emit('startGame', { lobbyId: currentLobbyId, categoryKey: currentSelectedCategoryKey });
-            startGameLobbyBtn.disabled = true;
+            startGameLobbyBtn.disabled = true; // Disable after starting
         }
     });
 
@@ -517,20 +552,32 @@ document.addEventListener('DOMContentLoaded', () => {
         playSound('click');
         stopMenuMusic();
         if (synth && synth.speaking) synth.cancel();
-        window.location.reload();
+        // Instead of reload, which can be disruptive, try disconnecting and showing the initial screen
+        socket.disconnect();
+        currentLobbyId = null;
+        currentPlayerId = null;
+        isHost = false;
+        isGamePaused = false;
+        showScreen(lobbyConnectContainer);
+        if(createLobbyBtn) createLobbyBtn.disabled = false;
+        if(joinLobbyBtn) joinLobbyBtn.disabled = false;
+        if(lobbyIdInput) lobbyIdInput.value = ''; // Clear lobby input
+        if(connectErrorMsg) connectErrorMsg.textContent = ''; // Clear errors
+        socket.connect(); // Reconnect for new session
+        console.log('[DEBUG] Left lobby, returned to connect screen.');
     });
 
     if(playAgainHostBtn) playAgainHostBtn.addEventListener('click', () => {
         playSound('click');
         if (isHost && currentLobbyId) {
             socket.emit('playAgain', currentLobbyId);
-            playAgainHostBtn.disabled = true;
+            playAgainHostBtn.disabled = true; // Disable temporarily
         }
     });
 
     if (muteBtn) {
         muteBtn.addEventListener('click', () => {
-            playSound('click');
+            playSound('click'); // Play click sound *before* toggling mute state
             toggleMute();
         });
     }
@@ -539,6 +586,8 @@ document.addEventListener('DOMContentLoaded', () => {
         if (currentLobbyId && isHost && quizContainer && !quizContainer.classList.contains('hidden')) {
             console.log('[DEBUG] Triggering hostTogglePause. isGamePaused (client-side before emit):', isGamePaused);
             socket.emit('hostTogglePause', { lobbyId: currentLobbyId });
+            // Visually disable button immediately, state updated by server event
+            if (hostTogglePauseBtn) hostTogglePauseBtn.disabled = true;
         } else {
             console.log('[DEBUG] Conditions not met for triggering host pause.');
         }
@@ -551,13 +600,14 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    // Keyboard shortcut for pause (Spacebar) for Host
     document.addEventListener('keydown', (event) => {
-        if ((event.code === 'Space' || event.key === ' ') &&
-            isHost &&
-            quizContainer && !quizContainer.classList.contains('hidden') &&
-            !['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement.tagName)) {
+        // Check if focus is not on an input/select/textarea to avoid interference
+        const activeElementTag = document.activeElement ? document.activeElement.tagName : null;
+        const isInputFocused = ['INPUT', 'TEXTAREA', 'SELECT'].includes(activeElementTag);
 
-            event.preventDefault();
+        if (event.code === 'Space' && isHost && quizContainer && !quizContainer.classList.contains('hidden') && !isInputFocused) {
+            event.preventDefault(); // Prevent default spacebar action (like scrolling)
             playSound('click');
             triggerHostPause();
         }
@@ -565,30 +615,37 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
     // --- Socket.IO Event Handlers ---
-    // ... (keep existing socket event handlers for connect, disconnect, lobbyCreated, etc.)
     socket.on('connect', () => {
         console.log('[DEBUG] Connected to server with ID:', socket.id);
+        // Re-enable buttons on connect/reconnect
         if(createLobbyBtn) createLobbyBtn.disabled = false;
         if(joinLobbyBtn) joinLobbyBtn.disabled = false;
-        if (lobbyConnectContainer && !lobbyConnectContainer.classList.contains('hidden') ||
-            lobbyWaitingRoom && !lobbyWaitingRoom.classList.contains('hidden')) {
-            startMenuMusic();
+        if (lobbyConnectContainer && !lobbyConnectContainer.classList.contains('hidden')) {
+            startMenuMusic(); // Start music if on connect screen
         }
+        // Attempt rejoining if previously in a lobby? More complex state needed.
     });
 
     socket.on('disconnect', (reason) => {
         console.log('[DEBUG] Vom Server getrennt:', reason);
-        showGlobalNotification('Vom Server getrennt. Versuche erneut zu verbinden...', 'error', 5000);
+        showGlobalNotification('Verbindung zum Server verloren. Versuche erneut...', 'error', 5000);
         stopMenuMusic();
-        if (synth && synth.speaking) synth.cancel();
-        if (isGamePaused && gamePausedOverlay) {
-            gamePausedOverlay.classList.add('hidden');
-            isGamePaused = false;
+        if (synth && synth.speaking) synth.cancel(); // Stop speech on disconnect
+        // Reset UI or show appropriate message
+        if (!gameOverContainer || gameOverContainer.classList.contains('hidden')) {
+            // If not on game over screen, likely need to go back to connect screen
+            showScreen(lobbyConnectContainer);
+            if(createLobbyBtn) createLobbyBtn.disabled = false; // Re-enable after disconnect
+            if(joinLobbyBtn) joinLobbyBtn.disabled = false;
+            if(lobbyIdInput) lobbyIdInput.value = '';
+            if(connectErrorMsg) connectErrorMsg.textContent = 'Verbindung verloren.';
         }
+        isGamePaused = false; // Reset pause state
+        if (gamePausedOverlay) gamePausedOverlay.classList.add('hidden');
     });
 
     socket.on('lobbyCreated', (data) => {
-        console.log('[DEBUG] lobbyCreated event received from server:', JSON.stringify(data));
+        console.log('[DEBUG] lobbyCreated event received:', JSON.stringify(data));
         currentLobbyId = data.lobbyId;
         currentPlayerId = data.playerId;
         if(displayLobbyId) displayLobbyId.textContent = currentLobbyId;
@@ -596,10 +653,10 @@ document.addEventListener('DOMContentLoaded', () => {
         allAvailableCategoriesCache = Array.isArray(data.availableCategories) ? [...data.availableCategories] : [];
         console.log('[DEBUG] lobbyCreated - allAvailableCategoriesCache set to:', JSON.stringify(allAvailableCategoriesCache));
 
-        updatePlayerList(data.players, allAvailableCategoriesCache, null);
+        updatePlayerList(data.players, allAvailableCategoriesCache, null); // Null for category initially
 
         showScreen(lobbyWaitingRoom);
-        if(connectErrorMsg) connectErrorMsg.textContent = '';
+        if(connectErrorMsg) connectErrorMsg.textContent = ''; // Clear any previous errors
     });
 
     socket.on('joinedLobby', (data) => {
@@ -609,45 +666,57 @@ document.addEventListener('DOMContentLoaded', () => {
         if(displayLobbyId) displayLobbyId.textContent = currentLobbyId;
 
         allAvailableCategoriesCache = Array.isArray(data.allCategoriesForLobby) ? [...data.allCategoriesForLobby] : [];
-        console.log('[DEBUG] joinedLobby - allAvailableCategoriesCache set to:', JSON.stringify(allAvailableCategoriesCache));
+        console.log('[DEBUG] joinedLobby - allAvailableCategoriesCache set:', JSON.stringify(allAvailableCategoriesCache));
 
         updatePlayerList(data.players, allAvailableCategoriesCache, data.selectedCategory);
         showScreen(lobbyWaitingRoom);
         if(connectErrorMsg) connectErrorMsg.textContent = '';
 
+        // If joining a game already in progress
         if (data.gameState === 'active') {
             if(lobbyMessage) lobbyMessage.textContent = "Spiel beigetreten. Warte auf nächste Frage.";
+            showScreen(quizContainer); // Show quiz screen immediately
             stopMenuMusic();
             if (gameCategoryDisplay && data.selectedCategory) {
                 gameCategoryDisplay.textContent = data.selectedCategory;
             }
+            // Handle pause state if joined mid-pause
+            isGamePaused = data.isPaused;
             if (data.isPaused) {
-                isGamePaused = true;
                 if(gamePausedOverlay) gamePausedOverlay.classList.remove('hidden');
                 if(pauseResumeMessage) {
                     pauseResumeMessage.textContent = isHost ?
-                        "Spiel pausiert. (Leertaste zum Pausieren/Fortsetzen)" :
+                        "Spiel pausiert. (Leertaste zum Fortsetzen)" : // Host sees resume option
                         "Das Spiel ist pausiert. Warte auf den Host.";
                 }
                 if(hostTogglePauseBtn) {
-                    hostTogglePauseBtn.textContent = 'Pause Spiel';
+                    hostTogglePauseBtn.textContent = 'Fortsetzen'; // Show resume text
                     hostTogglePauseBtn.disabled = !isHost;
                 }
-                if(optionsContainer) optionsContainer.querySelectorAll('.option-btn').forEach(btn => btn.disabled = true);
+                if(optionsContainer) optionsContainer.querySelectorAll('button').forEach(btn => btn.disabled = true); // Disable options
+                if(timerDisplay && data.remainingTime !== undefined) {
+                    timerDisplay.textContent = isHost ? `Pausiert (${Math.ceil(data.remainingTime)}s)` : `Pausiert`;
+                } else if (timerDisplay) {
+                    timerDisplay.textContent = 'Pausiert';
+                }
             }
         }
     });
 
     socket.on('categoryUpdatedByHost', (categoryKey) => {
         console.log('[DEBUG] categoryUpdatedByHost received:', categoryKey);
-        currentSelectedCategoryKey = categoryKey;
+        currentSelectedCategoryKey = categoryKey; // Update local state
 
-        if (categorySelect && categorySelect.options.length > 0) {
-            categorySelect.value = categoryKey || "";
-        } else if (categorySelect) {
-            console.warn("[DEBUG] categoryUpdatedByHost: categorySelect has no options, cannot set value.");
+        // Update dropdown selection visually
+        if (categorySelect) {
+            if (categoryKey && categorySelect.querySelector(`option[value="${categoryKey}"]`)) {
+                categorySelect.value = categoryKey;
+            } else {
+                categorySelect.value = ""; // Select placeholder if category is null or invalid
+            }
         }
 
+        // Update the text display below the dropdown
         if (categoryKey) {
             if(currentCategoryText) currentCategoryText.textContent = categoryKey;
             if(chosenCategoryDisplay) chosenCategoryDisplay.classList.remove('hidden');
@@ -656,6 +725,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if(chosenCategoryDisplay) chosenCategoryDisplay.classList.add('hidden');
         }
 
+        // Re-evaluate start button state for host
         if (isHost && startGameLobbyBtn) {
             const playerCount = playerListLobby ? playerListLobby.children.length : 0;
             startGameLobbyBtn.disabled = !currentSelectedCategoryKey || playerCount < 1;
@@ -663,17 +733,19 @@ document.addEventListener('DOMContentLoaded', () => {
         console.log('[DEBUG] categoryUpdatedByHost - UI updated for category:', categoryKey);
     });
 
+
     socket.on('lobbyError', (message) => {
-        displayError(connectErrorMsg, message);
+        displayError(connectErrorMsg, message, 5000); // Show error longer
+        // Re-enable connect buttons on error
         if(createLobbyBtn) createLobbyBtn.disabled = false;
         if(joinLobbyBtn) joinLobbyBtn.disabled = false;
         console.error('[DEBUG] Lobby Fehler:', message);
     });
 
     socket.on('startGameError', (message) => {
-        displayError(startGameErrorMsg, message);
+        displayError(startGameErrorMsg, message, 5000);
         if (isHost && startGameLobbyBtn) {
-            startGameLobbyBtn.disabled = false;
+            startGameLobbyBtn.disabled = false; // Re-enable start button on error
         }
         console.error('[DEBUG] Start Game Error:', message);
     });
@@ -683,7 +755,7 @@ document.addEventListener('DOMContentLoaded', () => {
         allAvailableCategoriesCache = Array.isArray(data.allCategoriesForLobby) ? [...data.allCategoriesForLobby] : allAvailableCategoriesCache;
         updatePlayerList(data.players, allAvailableCategoriesCache, data.selectedCategory);
 
-        if (data.joinedPlayerId !== currentPlayerId) {
+        if (data.joinedPlayerId !== currentPlayerId) { // Don't notify self
             playSound('playerJoined');
             showGlobalNotification(`${data.joinedPlayerName} ist der Lobby beigetreten.`, 'info', 2000);
         }
@@ -691,6 +763,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     socket.on('playerLeft', (data) => {
         console.log('[DEBUG] playerLeft event received:', JSON.stringify(data));
+        // Update player list using the latest data
+        allAvailableCategoriesCache = Array.isArray(data.allCategoriesForLobby) ? [...data.allCategoriesForLobby] : allAvailableCategoriesCache; // Update cache if needed
         updatePlayerList(data.players, allAvailableCategoriesCache, data.selectedCategory);
         showGlobalNotification(`${data.disconnectedPlayerName} hat die Lobby verlassen.`, 'info', 2000);
     });
@@ -698,21 +772,23 @@ document.addEventListener('DOMContentLoaded', () => {
     socket.on('hostChanged', (data) => {
         console.log('[DEBUG] hostChanged event received:', JSON.stringify(data));
         allAvailableCategoriesCache = Array.isArray(data.availableCategories) ? [...data.availableCategories] : [];
-        updatePlayerList(data.players, allAvailableCategoriesCache, data.selectedCategory);
+        updatePlayerList(data.players, allAvailableCategoriesCache, data.selectedCategory); // Update list and roles
         const newHost = data.players.find(p => p.id === data.newHostId);
         if (newHost) {
             showGlobalNotification(`${newHost.name} ist jetzt der Host.`, 'info', 3000);
         }
-        if (quizContainer && !quizContainer.classList.contains('hidden')) {
+        // Update host-specific UI elements (like pause button visibility) based on new `isHost` status
+        if (quizContainer && !quizContainer.classList.contains('hidden')) { // Check if quiz screen is active
             if (isHost && hostTogglePauseBtn) {
                 hostTogglePauseBtn.classList.remove('hidden');
-                hostTogglePauseBtn.disabled = false;
-                hostTogglePauseBtn.textContent = 'Pause Spiel';
+                hostTogglePauseBtn.disabled = false; // Enable for new host
+                hostTogglePauseBtn.textContent = isGamePaused ? 'Fortsetzen' : 'Pause Spiel';
             } else if (hostTogglePauseBtn) {
-                hostTogglePauseBtn.classList.add('hidden');
+                hostTogglePauseBtn.classList.add('hidden'); // Hide for non-host
             }
         }
     });
+
 
     socket.on('gameStarted', (data) => {
         console.log('[DEBUG] gameStarted event received:', JSON.stringify(data));
@@ -720,26 +796,29 @@ document.addEventListener('DOMContentLoaded', () => {
         playSound('gameStart');
         if(gameCategoryDisplay) gameCategoryDisplay.textContent = data.category || "Unbekannt";
         showScreen(quizContainer);
-        isGamePaused = false;
+        isGamePaused = false; // Ensure game starts unpaused
         if(gamePausedOverlay) gamePausedOverlay.classList.add('hidden');
         if(hostTogglePauseBtn) {
-            hostTogglePauseBtn.textContent = 'Pause Spiel';
-            hostTogglePauseBtn.disabled = !isHost;
+            hostTogglePauseBtn.textContent = 'Pause Spiel'; // Reset button text
+            hostTogglePauseBtn.disabled = !isHost; // Enable/disable based on host status
         }
     });
 
     socket.on('newQuestion', (data) => {
-        wasTimedOut = false;
+        wasTimedOut = false; // Reset timeout flag
+        // Ensure game is treated as resumed visually if it was paused
         if (isGamePaused) {
-            isGamePaused = false;
+            isGamePaused = false; // Update local state
             if(gamePausedOverlay) gamePausedOverlay.classList.add('hidden');
             if(hostTogglePauseBtn && isHost) {
-                hostTogglePauseBtn.textContent = 'Pause Spiel';
+                hostTogglePauseBtn.textContent = 'Pause Spiel'; // Set button text to 'Pause'
                 hostTogglePauseBtn.disabled = false;
             }
         }
 
+        // --- Read Question Aloud ---
         speak(data.question, 'de-DE', null, true);
+        // --- --------------- ---
 
         currentQuestionIndex = data.questionIndex;
         questionTimeLimit = data.timeLimit;
@@ -754,63 +833,59 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if(questionCounter) questionCounter.textContent = `F: ${data.questionIndex + 1}/${data.totalQuestions}`;
 
-        const myPlayerData = quizContainer && quizContainer.dataset.players ? JSON.parse(quizContainer.dataset.players) : [];
+        // Update score display (might be slightly behind until 'updateScores' event)
+        const myPlayerData = quizContainer && quizContainer.dataset.players ? JSON.parse(quizContainer.dataset.players || '[]') : [];
         const myPlayer = myPlayerData.find(p=>p.id === currentPlayerId);
-
         if (playerInfoQuiz) {
-            if (myPlayer) {
-                playerInfoQuiz.textContent = `${myPlayer.name} (Punkte: ${myPlayer.score || 0})`;
-            } else {
-                const nameFromInput = playerNameInput ? playerNameInput.value.trim() || 'Du' : 'Du';
-                playerInfoQuiz.textContent = `${nameFromInput} (Punkte: ...)`;
-            }
+            const nameFromInput = playerNameInput ? playerNameInput.value.trim() || 'Du' : 'Du';
+            const scoreToDisplay = myPlayer ? myPlayer.score : (playerInfoQuiz.textContent.match(/Punkte: (\d+)/)?.[1] || 0);
+            playerInfoQuiz.textContent = `${myPlayer ? myPlayer.name : nameFromInput} (Punkte: ${scoreToDisplay})`;
         }
 
-        // MODIFICATION START: Different background colors and prefixes for options
+
+        // Create Option Buttons
         if(optionsContainer) {
             optionsContainer.innerHTML = ''; // Clear previous options
 
-            // Define styles for each option button
             const optionStyles = [
                 { bg: 'bg-sky-700', hover: 'hover:bg-sky-600', border: 'border-sky-500', focusRing: 'focus:ring-sky-500' },
                 { bg: 'bg-emerald-700', hover: 'hover:bg-emerald-600', border: 'border-emerald-500', focusRing: 'focus:ring-emerald-500' },
                 { bg: 'bg-amber-700', hover: 'hover:bg-amber-600', border: 'border-amber-500', focusRing: 'focus:ring-amber-500' },
                 { bg: 'bg-violet-700', hover: 'hover:bg-violet-600', border: 'border-violet-500', focusRing: 'focus:ring-violet-500' }
             ];
-            const prefixes = ['a.) ', 'b.) ', 'c.) ', 'd.) '];
+            const prefixes = ['A.) ', 'B.) ', 'C.) ', 'D.) ']; // Changed to A,B,C,D
 
             data.options.forEach((optionText, index) => {
                 const button = document.createElement('button');
-                // Add prefix to the option text
-                button.textContent = (prefixes[index] || '') + optionText;
+                button.textContent = (prefixes[index] || '') + optionText; // Add prefix
+                button.dataset.originalAnswer = optionText; // Store original answer without prefix
 
-                // Store the original answer text without the prefix for submission
-                button.dataset.originalAnswer = optionText;
+                // Base classes for structure and transitions
+                button.className = 'option-btn w-full p-4 rounded-lg text-left text-slate-100 font-medium border transition-all duration-150 ease-in-out focus:outline-none focus:ring-2 focus:ring-opacity-75 disabled:opacity-60 disabled:cursor-not-allowed';
 
-                // Apply base classes (structure, padding, text, default border behavior)
-                // Note: Specific background/border/hover colors are applied below.
-                button.className = 'w-full p-4 rounded-lg text-left text-slate-100 font-medium border transition-all duration-150 ease-in-out focus:outline-none focus:ring-2 focus:ring-opacity-75 disabled:opacity-60 disabled:cursor-not-allowed';
-
-                // Apply specific styles from optionStyles array
-                const currentStyle = optionStyles[index % optionStyles.length]; // Cycle through styles if more than 4 options
+                // Apply specific colors
+                const currentStyle = optionStyles[index % optionStyles.length];
                 button.classList.add(currentStyle.bg, currentStyle.hover, currentStyle.border, currentStyle.focusRing);
 
-                button.disabled = isGamePaused; // Disable button if game is paused
+                button.disabled = isGamePaused; // Ensure buttons are enabled if game isn't paused
 
                 button.addEventListener('click', () => {
-                    playSound('click');
-                    // Disable all option buttons and remove selection rings
+                    // --- Play sound effect ---
+                    playSound('click'); // Should play concurrently with speech
+                    // --- ----------------- ---
+
+                    // Disable all buttons and style the selected one
                     optionsContainer.querySelectorAll('button').forEach(btn => {
                         btn.disabled = true;
-                        btn.classList.remove('ring-4', 'ring-white', 'ring-opacity-75'); // Remove selection indicator
+                        btn.classList.remove('ring-4', 'ring-white', 'ring-opacity-75'); // Remove selection indicator from others
                     });
-                    // Add selection ring to the clicked button
-                    button.classList.add('ring-4', 'ring-white', 'ring-opacity-75');
+                    button.classList.add('ring-4', 'ring-white', 'ring-opacity-75'); // Add indicator to clicked button
 
+                    // Send answer
                     socket.emit('submitAnswer', {
                         lobbyId: currentLobbyId,
                         questionIndex: currentQuestionIndex,
-                        answer: button.dataset.originalAnswer // Send the original answer text
+                        answer: button.dataset.originalAnswer // Send original answer
                     });
                     if(feedbackText) feedbackText.textContent = ''; // Clear previous feedback
                     if(waitingForOthersMsg) waitingForOthersMsg.textContent = "Antwort übermittelt. Warte auf andere Spieler oder Timer...";
@@ -818,195 +893,253 @@ document.addEventListener('DOMContentLoaded', () => {
                 optionsContainer.appendChild(button);
             });
         }
-        // MODIFICATION END
 
+        // Reset feedback and timer display
         if(feedbackText) feedbackText.textContent = '';
         if(waitingForOthersMsg) waitingForOthersMsg.textContent = '';
         if(timerDisplay) {
             timerDisplay.textContent = isGamePaused ? 'Pausiert' : `${questionTimeLimit}s`;
-            timerDisplay.classList.remove('text-red-500');
-            if (!isGamePaused) timerDisplay.classList.add('text-amber-400');
+            timerDisplay.classList.remove('text-red-500', 'text-amber-400'); // Clear color classes
+            if (!isGamePaused) timerDisplay.classList.add('text-amber-400'); // Set default color if not paused
         }
     });
 
+
     socket.on('updateScores', (playersScoreData) => {
+        // Store player data for potential use (like updating player name/score display)
         if(quizContainer) quizContainer.dataset.players = JSON.stringify(playersScoreData);
-        updateLiveScores(playersScoreData);
+
+        updateLiveScores(playersScoreData); // Update the live scoreboard section
+
+        // Update the main player info display at the top
         const me = playersScoreData.find(p => p.id === currentPlayerId);
         if (me && playerInfoQuiz) {
             playerInfoQuiz.textContent = `${me.name} (Punkte: ${me.score})`;
         }
     });
 
+
     socket.on('timerUpdate', (timeLeft) => {
-        if (isGamePaused) {
+        if (isGamePaused) { // Handle paused state display
             if(timerDisplay) {
                 timerDisplay.textContent = isHost ?
-                    `Pausiert (${Math.ceil(timeLeft)}s)` :
+                    `Pausiert (${Math.ceil(timeLeft)}s)` : // Show remaining time for host
                     `Pausiert`;
+                timerDisplay.classList.remove('text-red-500', 'text-amber-400'); // No color when paused
             }
-            return;
+            return; // Don't process timer colors if paused
         }
-        if(!timerDisplay) return;
+
+        if(!timerDisplay) return; // Exit if timer display element not found
+
         timerDisplay.textContent = `${timeLeft}s`;
+        // Apply color coding based on time remaining
         if (timeLeft <= 5 && timeLeft > 0) {
             timerDisplay.classList.remove('text-amber-400');
-            timerDisplay.classList.add('text-red-500');
+            timerDisplay.classList.add('text-red-500'); // Red for last 5 seconds
         } else if (timeLeft === 0) {
-            wasTimedOut = true;
-            timerDisplay.classList.add('text-red-500');
+            wasTimedOut = true; // Set flag when time runs out
+            timerDisplay.classList.add('text-red-500'); // Keep red at 0
             if(waitingForOthersMsg) waitingForOthersMsg.textContent = "Zeit abgelaufen! Antwort wird aufgedeckt...";
-            if(optionsContainer) optionsContainer.querySelectorAll('.option-btn').forEach(btn => btn.disabled = true);
+            if(optionsContainer) optionsContainer.querySelectorAll('button').forEach(btn => btn.disabled = true); // Disable options on timeout
         } else {
-            timerDisplay.classList.remove('text-red-500');
-            timerDisplay.classList.add('text-amber-400');
+            timerDisplay.classList.remove('text-red-500'); // Ensure red is removed if > 5s
+            timerDisplay.classList.add('text-amber-400'); // Default amber color
         }
     });
 
     socket.on('answerResult', (data) => {
         console.log('[DEBUG] answerResult received:', data);
 
-        const myPlayerData = quizContainer && quizContainer.dataset.players ? JSON.parse(quizContainer.dataset.players) : [];
+        // Update local score display immediately based on result
+        const myPlayerData = quizContainer && quizContainer.dataset.players ? JSON.parse(quizContainer.dataset.players || '[]') : [];
         const me = myPlayerData.find(p => p.id === currentPlayerId);
         if (me && playerInfoQuiz) {
-            me.score = data.score;
-            me.streak = data.streak;
-            playerInfoQuiz.textContent = `${me.name} (Punkte: ${me.score})`;
+            // Update score and streak in local dataset representation if needed
+            const playerIndex = myPlayerData.findIndex(p => p.id === currentPlayerId);
+            if(playerIndex !== -1) {
+                myPlayerData[playerIndex].score = data.score;
+                myPlayerData[playerIndex].streak = data.streak;
+                if(quizContainer) quizContainer.dataset.players = JSON.stringify(myPlayerData);
+            }
+            // Update visual display
+            playerInfoQuiz.textContent = `${me.name} (Punkte: ${data.score})`;
         }
-        if(waitingForOthersMsg) waitingForOthersMsg.textContent = "Warte auf Ergebnisse aller Spieler...";
+
+        // Play sound based on correctness
+        playSound(data.isCorrect ? 'correctAnswer' : 'incorrectAnswer');
+        if (data.isCorrect && data.streak > 1) {
+            // Play streak sound slightly delayed after correct sound
+            setTimeout(() => playSound('streak'), 300);
+        }
+
+
+        // Update feedback text (optional, could just wait for questionOver)
         if(feedbackText) {
-            feedbackText.textContent = `Deine Antwort wurde registriert.`;
-            feedbackText.className = 'text-lg font-medium text-slate-300';
+            feedbackText.textContent = `Deine Antwort wurde registriert. ${data.isCorrect ? '(Korrekt)' : '(Falsch)'}`;
+            feedbackText.className = `text-lg font-medium ${data.isCorrect ? 'text-green-400' : 'text-red-400'}`;
         }
+        // Keep waiting message active
+        if(waitingForOthersMsg) waitingForOthersMsg.textContent = "Warte auf Ergebnisse aller Spieler...";
     });
+
 
     socket.on('questionOver', (data) => {
         console.log('[DEBUG] questionOver received:', data, 'wasTimedOut:', wasTimedOut);
-        if (wasTimedOut && !isGamePaused) {
+        if (wasTimedOut && !isGamePaused) { // Play times up sound only if timer actually hit zero
             playSound('timesUp');
         }
-        wasTimedOut = false;
+        wasTimedOut = false; // Reset flag
 
-        if(feedbackText) {
-            feedbackText.textContent = '';
-        }
-        if(waitingForOthersMsg) waitingForOthersMsg.textContent = "Richtige Antwort wird vorgelesen...";
+        // Clear intermediate feedback
+        if(feedbackText) feedbackText.textContent = '';
 
-        if(optionsContainer) {
-            optionsContainer.querySelectorAll('button').forEach(btn => { // Ensure it targets buttons
-                btn.disabled = true;
-                // Remove selection styling from all buttons
-                btn.classList.remove('ring-4', 'ring-white', 'ring-opacity-75');
+        if(waitingForOthersMsg) waitingForOthersMsg.textContent = "Richtige Antwort wird angezeigt...";
 
-                // Clear previous visual state classes before applying new ones
-                btn.classList.remove('selected', 'correct', 'incorrect-picked', 'reveal-correct');
-
-                const originalButtonAnswer = btn.dataset.originalAnswer; // Use stored original answer
-                const correctAnswerText = data.correctAnswer.trim();
-
-                // The 'reveal-correct' class (from style.css) will apply its own background (e.g., teal)
-                // This will override the unique background applied during the question display.
-                if (originalButtonAnswer && originalButtonAnswer.trim().toLowerCase() === correctAnswerText.toLowerCase()) {
-                    btn.classList.add('reveal-correct');
-                }
-                // Note: Player-specific highlighting (green for their correct pick, red for their incorrect pick)
-                // would require more complex state tracking or server data. The current `style.css`
-                // has classes for `.correct` and `.incorrect-picked`, but this `questionOver` handler
-                // in the provided `script.js` mainly focuses on `reveal-correct`.
+        // --- Visual Feedback: Flash Correct Answer ---
+        if (optionsContainer && data.correctIndex !== undefined && data.correctIndex !== -1) {
+            const buttons = optionsContainer.querySelectorAll('button');
+            buttons.forEach(btn => {
+                btn.disabled = true; // Ensure all are disabled
+                // Clear previous visual states
+                btn.classList.remove('ring-4', 'ring-white', 'ring-opacity-75', 'selected', 'correct', 'incorrect-picked', 'reveal-correct', 'flash-correct');
             });
-        }
-        updateLiveScores(data.scores);
 
-        const textToSpeak = `Die richtige Antwort war: ${data.correctAnswer}`;
-        speak(textToSpeak, 'de-DE', () => {
-            if(waitingForOthersMsg) waitingForOthersMsg.textContent = "Nächste Frage kommt...";
-            // The 5-second delay and 'hostReadyForNextQuestion' emission seem to be part of a specific
-            // flow that might need review if it's not working as intended, but is outside the scope
-            // of just changing button colors and adding prefixes.
-            setTimeout(() => {
-                if (isHost && currentLobbyId && !isGamePaused) {
-                    console.log('[DEBUG] Host emitting hostReadyForNextQuestion after TTS and 5s delay.');
-                    // socket.emit('hostReadyForNextQuestion', { lobbyId: currentLobbyId }); // This line was in the original user script, but not standard Socket.IO
-                }
-            }, 5000); // Delay before potentially moving to the next question or allowing host to trigger
-        }, false);
+            const correctButton = buttons[data.correctIndex];
+            if (correctButton) {
+                correctButton.classList.add('flash-correct'); // Apply flash style
+
+                // Optional: Also apply a persistent style like reveal-correct during/after flash
+                // correctButton.classList.add('reveal-correct');
+
+                // Remove the flashing class after 3 seconds (matching server duration)
+                setTimeout(() => {
+                    if (correctButton) { // Check if button still exists
+                        correctButton.classList.remove('flash-correct');
+                        // Optionally remove reveal-correct too if it was added
+                        // correctButton.classList.remove('reveal-correct');
+                    }
+                    if(waitingForOthersMsg) waitingForOthersMsg.textContent = "Nächste Frage kommt..."; // Update status after flash ends
+                }, 3000); // Duration matches CORRECT_ANSWER_DISPLAY_DURATION
+            } else {
+                console.warn("Correct button element not found for index:", data.correctIndex);
+            }
+        } else {
+            // Fallback if index is missing or invalid
+            console.warn("Correct index not provided or invalid in questionOver data.");
+            if(optionsContainer) optionsContainer.querySelectorAll('button').forEach(btn => { btn.disabled = true; }); // Still disable buttons
+        }
+        // --- End Visual Feedback ---
+
+        updateLiveScores(data.scores); // Update scores based on final data for the round
+
+        // --- NO SPEECH FOR ANSWER ---
+        // const textToSpeak = `Die richtige Antwort war: ${data.correctAnswer}`;
+        // speak(textToSpeak, ...);
+        // --- -------------------- ---
+
+        // Server controls the delay before the next question starts via CORRECT_ANSWER_DISPLAY_DURATION
     });
 
+
     socket.on('gameOver', (data) => {
-        // ... (keep existing gameOver logic)
-        stopMenuMusic();
-        if (synth && synth.speaking) synth.cancel();
-        isGamePaused = false;
+        stopMenuMusic(); // Stop any quiz music
+        if (synth && synth.speaking) synth.cancel(); // Stop any ongoing speech
+        isGamePaused = false; // Reset pause state
         if(gamePausedOverlay) gamePausedOverlay.classList.add('hidden');
 
         if(finalScoresDiv) {
-            finalScoresDiv.innerHTML = '';
+            finalScoresDiv.innerHTML = ''; // Clear previous scores
             data.finalScores.forEach((player, index) => {
                 const scoreEntry = document.createElement('div');
-                scoreEntry.className = 'final-score-entry';
+                scoreEntry.className = 'final-score-entry'; // Base class
                 let medal = '';
-                if (index === 0) medal = '🥇 ';
-                else if (index === 1) medal = '🥈 ';
-                else if (index === 2) medal = '🥉 ';
+                if (index === 0) medal = '🥇 '; // Gold
+                else if (index === 1) medal = '🥈 '; // Silver
+                else if (index === 2) medal = '🥉 '; // Bronze
 
                 let displayName = player.name;
                 if (player.originalId === currentPlayerId) {
-                    displayName += " (Du)";
+                    displayName += " (Du)"; // Identify current player
+                    // Add specific styling for current player's entry if desired
+                    scoreEntry.classList.add('border-l-4', 'border-sky-300', 'pl-2'); // Example highlight
                 }
-                scoreEntry.innerHTML = `<span>${medal}${displayName}</span><span>${player.score} Pkt</span>`;
+
+                // Apply medal styles based on rank (index) via CSS classes or direct style manipulation
+                if (index === 0) scoreEntry.classList.add('final-score-gold');
+                else if (index === 1) scoreEntry.classList.add('final-score-silver');
+                else if (index === 2) scoreEntry.classList.add('final-score-bronze');
+
+
+                scoreEntry.innerHTML = `<span class="flex-grow">${medal}${displayName}</span><span class="font-semibold">${player.score} Pkt</span>`;
                 finalScoresDiv.appendChild(scoreEntry);
             });
         }
 
+        // Control Play Again / Leave buttons
         if (isHost) {
             if(playAgainHostBtn) playAgainHostBtn.classList.remove('hidden');
-            if(playAgainHostBtn) playAgainHostBtn.disabled = false;
+            if(playAgainHostBtn) playAgainHostBtn.disabled = false; // Enable button for host
             if(waitingForHostPlayAgainBtn) waitingForHostPlayAgainBtn.classList.add('hidden');
         } else {
             if(playAgainHostBtn) playAgainHostBtn.classList.add('hidden');
             if(waitingForHostPlayAgainBtn) waitingForHostPlayAgainBtn.classList.remove('hidden');
         }
         showScreen(gameOverContainer);
-        startMenuMusic();
+        startMenuMusic(); // Start menu music on game over screen
     });
 
+
     socket.on('lobbyResetForPlayAgain', (data) => {
-        // ... (keep existing lobbyResetForPlayAgain logic)
         console.log('[DEBUG] lobbyResetForPlayAgain received:', JSON.stringify(data));
-        if (synth && synth.speaking) synth.cancel();
-        currentLobbyId = data.lobbyId;
+        if (synth && synth.speaking) synth.cancel(); // Stop speech if any
+        currentLobbyId = data.lobbyId; // Reaffirm lobby ID
         allAvailableCategoriesCache = Array.isArray(data.availableCategories) ? [...data.availableCategories] : [];
-        updatePlayerList(data.players, allAvailableCategoriesCache, data.selectedCategory);
-        showScreen(lobbyWaitingRoom);
+
+        // Reset game state variables
+        currentQuestionIndex = -1;
+        currentSelectedCategoryKey = null;
         isGamePaused = false;
-        if(gamePausedOverlay) gamePausedOverlay.classList.add('hidden');
-        if(hostTogglePauseBtn) {
+        wasTimedOut = false;
+
+        // Update UI
+        updatePlayerList(data.players, allAvailableCategoriesCache, data.selectedCategory); // Update player list, reset category selection
+        showScreen(lobbyWaitingRoom); // Go back to waiting room
+        if(gamePausedOverlay) gamePausedOverlay.classList.add('hidden'); // Ensure pause overlay is hidden
+        if(hostTogglePauseBtn) { // Reset pause button state
             hostTogglePauseBtn.textContent = 'Pause Spiel';
             hostTogglePauseBtn.disabled = !isHost;
         }
 
         if(lobbyMessage) lobbyMessage.textContent = isHost ? "Spiel zurückgesetzt. Wähle Kategorie und starte!" : "Host hat das Spiel zurückgesetzt. Warte auf Start...";
-        if(startGameLobbyBtn) startGameLobbyBtn.disabled = !isHost || !categorySelect.value;
-        if(playAgainHostBtn) playAgainHostBtn.disabled = false;
+        if (startGameLobbyBtn && isHost) { // Reset start button state for host
+            startGameLobbyBtn.disabled = !categorySelect.value || data.players.length < 1;
+            startGameLobbyBtn.classList.remove('hidden');
+        } else if (startGameLobbyBtn) {
+            startGameLobbyBtn.classList.add('hidden');
+        }
+        if(playAgainHostBtn) playAgainHostBtn.disabled = false; // Re-enable play again button in case it was clicked fast
     });
 
+
     socket.on('gamePaused', (data) => {
-        // ... (keep existing gamePaused logic)
         console.log('[DEBUG] gamePaused event received. Remaining time:', data.remainingTime);
-        isGamePaused = true;
-        if (synth && synth.speaking) synth.cancel();
-        if(gamePausedOverlay) gamePausedOverlay.classList.remove('hidden');
+        isGamePaused = true; // Set local pause state
+        if (synth && synth.speaking) synth.cancel(); // Pause any speech
+        if(gamePausedOverlay) gamePausedOverlay.classList.remove('hidden'); // Show overlay
         if(pauseResumeMessage) {
             pauseResumeMessage.textContent = isHost ?
-                "Spiel pausiert. (Leertaste zum Pausieren/Fortsetzen)" :
+                "Spiel pausiert. (Leertaste zum Fortsetzen)" : // Host sees resume option
                 "Das Spiel ist pausiert. Warte auf den Host.";
         }
         if(hostTogglePauseBtn && isHost) {
-            hostTogglePauseBtn.textContent = 'Pause Spiel'; // Should be 'Fortsetzen' or similar if already paused
-            hostTogglePauseBtn.disabled = false;
+            hostTogglePauseBtn.textContent = 'Fortsetzen'; // Change button text
+            hostTogglePauseBtn.disabled = false; // Ensure button is enabled for host
         }
 
-        if(optionsContainer) optionsContainer.querySelectorAll('.option-btn').forEach(btn => btn.disabled = true);
+        // Disable option buttons while paused
+        if(optionsContainer) optionsContainer.querySelectorAll('button').forEach(btn => btn.disabled = true);
+        // Update timer display for paused state
         if(timerDisplay && data.remainingTime !== undefined) {
             timerDisplay.textContent = isHost ? `Pausiert (${Math.ceil(data.remainingTime)}s)` : `Pausiert`;
         } else if(timerDisplay) {
@@ -1014,43 +1147,50 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
+
     socket.on('gameResumed', () => {
-        // ... (keep existing gameResumed logic)
         console.log('[DEBUG] gameResumed event received.');
-        isGamePaused = false;
-        if(gamePausedOverlay) gamePausedOverlay.classList.add('hidden');
+        isGamePaused = false; // Update local pause state
+        if(gamePausedOverlay) gamePausedOverlay.classList.add('hidden'); // Hide overlay
 
         if(hostTogglePauseBtn && isHost) {
-            hostTogglePauseBtn.textContent = 'Pause Spiel';
-            hostTogglePauseBtn.disabled = false;
+            hostTogglePauseBtn.textContent = 'Pause Spiel'; // Change button text back
+            hostTogglePauseBtn.disabled = false; // Ensure button is enabled
         }
 
+        // Re-enable option buttons *unless* they were already answered/revealed
         if(optionsContainer) {
-            optionsContainer.querySelectorAll('.option-btn').forEach(btn => {
-                const isAnsweredOrRevealed = btn.classList.contains('selected') || // 'selected' is actually the ring class now
-                    btn.classList.contains('ring-4') || // Check for the ring class
+            optionsContainer.querySelectorAll('button').forEach(btn => {
+                // Check if the button indicates a final state (selected, correct, etc.)
+                const isFinalState = btn.classList.contains('ring-4') || // Check for selection ring
                     btn.classList.contains('correct') ||
                     btn.classList.contains('incorrect-picked') ||
-                    btn.classList.contains('reveal-correct');
-                if (!isAnsweredOrRevealed) {
+                    btn.classList.contains('reveal-correct') ||
+                    btn.classList.contains('flash-correct'); // Also check flash
+                if (!isFinalState) { // Only re-enable if not in a final state
                     btn.disabled = false;
                 }
             });
         }
         console.log('[DEBUG] gameResumed: UI updated for resume.');
+        // Timer will update via 'timerUpdate' events from server
     });
 
-    // Initial setup
-    // ... (keep existing initial setup)
-    showScreen(lobbyConnectContainer);
-    updateMuteButtonAppearance();
+
+    // --- Initial Setup ---
+    showScreen(lobbyConnectContainer); // Start at the connection screen
+    updateMuteButtonAppearance(); // Set initial mute button style
+
+    // Load saved player name
     const savedPlayerName = localStorage.getItem('quizPlayerName');
     if (savedPlayerName && playerNameInput) {
         playerNameInput.value = savedPlayerName;
     }
+    // Save player name on input
     if(playerNameInput) playerNameInput.addEventListener('input', () => {
         localStorage.setItem('quizPlayerName', playerNameInput.value);
     });
+    // Force lobby ID input to uppercase
     if(lobbyIdInput) lobbyIdInput.addEventListener('input', () => {
         lobbyIdInput.value = lobbyIdInput.value.toUpperCase();
     });

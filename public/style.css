@@ -11,69 +11,73 @@ body {
 /* Option Button Styling */
 .option-btn {
     @apply w-full p-4 rounded-lg text-slate-100 font-medium
-        /* Default background/border are now applied via JS for uniqueness */
     border /* Applies default border-width 1px and solid style. Color comes from JS. */
     transition-all duration-150 ease-in-out
     focus:outline-none focus:ring-2 /* Specific focus ring color is applied in JS */ focus:ring-opacity-75
     disabled:opacity-60 disabled:cursor-not-allowed
     flex items-center /* For vertical centering of content */
     min-h-[4.5rem] /* Ensures consistent button height, adjust as needed (e.g., min-h-18 in Tailwind) */
-    text-left; /* Keeps text (like "a.) Answer") left-aligned */
+    text-left; /* Keeps text (like "A.) Answer") left-aligned */
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Subtle shadow */
 }
 
-/* Selection indication is now primarily by a ring applied in JS, e.g. ring-4 ring-white */
-/* .option-btn.selected class can be removed or repurposed if not used for background changing selection */
-.option-btn.selected {
-    /* Example: if you still want a specific box-shadow for selected state (that doesn't change background) */
-    /* box-shadow: 0 0 8px rgba(255, 255, 255, 0.7); */
-}
+/* Selection indication is primarily by a ring applied in JS, e.g. ring-4 ring-white */
 
-/* These classes below will override the unique button colors during the answer reveal phase */
-.option-btn.correct { /* Player picked this and it was correct */
+/* Styles for revealing answers after the question is over */
+/* These override the unique button colors applied during question display */
+
+.option-btn.correct { /* Player picked this and it was correct - Can be used by answerResult */
     @apply bg-green-500 border-green-400 text-white ring-2 ring-green-300;
     box-shadow: 0 0 10px rgba(34, 197, 94, 0.5); /* green-500 */
 }
-/* This style was in the original file, ensure it's what you want for 'selected correct' */
-.option-btn.correct.selected {
-    @apply bg-green-600 border-green-500;
-}
 
-.option-btn.incorrect-picked { /* Player picked this, but it was wrong */
+.option-btn.incorrect-picked { /* Player picked this, but it was wrong - Can be used by answerResult */
     @apply bg-red-500 border-red-400 text-white ring-2 ring-red-300;
     box-shadow: 0 0 10px rgba(239, 68, 68, 0.5); /* red-500 */
 }
 
-.option-btn.reveal-correct { /* General reveal of the correct answer */
+.option-btn.reveal-correct { /* General reveal of the correct answer - Can be used optionally with flash */
     @apply bg-teal-500 border-teal-400 text-white ring-2 ring-teal-300;
-    animation: pulse-border 1.5s infinite;
+    /* animation: pulse-border 1.5s infinite; */ /* Removed pulsing to avoid conflict with flash */
 }
 
-@keyframes pulse-border {
-    0% { box-shadow: 0 0 0 0 rgba(20, 184, 166, 0.7); } /* teal-500 */
-    70% { box-shadow: 0 0 0 10px rgba(20, 184, 166, 0); }
-    100% { box-shadow: 0 0 0 0 rgba(20, 184, 166, 0); }
+
+/* --- ADDED: Flashing animation for the correct answer button --- */
+@keyframes flash {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.4; transform: scale(1.03); } /* Slight pulse effect during flash */
 }
+
+.flash-correct {
+    animation: flash 0.5s 6; /* Run flash animation (0.5s duration) 6 times = 3 seconds total */
+    /* Apply a base style during flash, e.g., the reveal-correct style */
+    @apply bg-teal-500 border-teal-400 text-white ring-2 ring-teal-300;
+}
+/* --- END ADDED --- */
+
 
 /* Live Scoreboard Enhancements */
 #live-scores-list .player-entry-quiz {
     @apply flex justify-between items-center py-2 px-3 rounded-md transition-colors duration-150;
 }
 #live-scores-list .player-entry-quiz:nth-child(odd) {
-    @apply bg-slate-600/50;
+    @apply bg-slate-600/50; /* Slightly different background for odd rows */
 }
 #live-scores-list .player-entry-quiz .player-name-quiz {
     @apply font-medium text-slate-200;
+    word-break: break-word; /* Prevent long names overflowing */
+    flex-grow: 1; /* Allow name to take available space */
+    margin-right: 8px; /* Space before score */
 }
 #live-scores-list .player-entry-quiz .player-score-quiz {
-    @apply font-bold text-sky-300;
+    @apply font-bold text-sky-300 whitespace-nowrap; /* Prevent score wrapping */
 }
 #live-scores-list .player-entry-quiz .player-streak-quiz {
-    @apply text-xs text-purple-400 ml-2;
+    @apply text-xs text-purple-400 ml-2 whitespace-nowrap; /* Prevent streak wrapping */
 }
 
 #live-scores-list .player-entry-quiz.current-player-highlight {
-    @apply bg-sky-700/70 border-l-4 border-sky-400;
+    @apply bg-sky-700/70 border-l-4 border-sky-400 pl-2; /* Highlight current player */
 }
 #live-scores-list .player-entry-quiz.current-player-highlight .player-name-quiz {
     @apply text-sky-100;
@@ -84,42 +88,29 @@ body {
     @apply flex justify-between items-center py-2 px-4 bg-slate-700 rounded-lg mb-2 shadow;
     font-size: 1.1rem;
 }
-
-#final-scores .final-score-entry:first-child { /* Gold */
+/* Medal styles applied via JS using classes */
+.final-score-gold {
     @apply bg-gradient-to-r from-amber-400 to-yellow-500 text-slate-900 font-bold;
 }
-#final-scores .final-score-entry:nth-child(2) { /* Silver */
+.final-score-silver {
     @apply bg-gradient-to-r from-slate-400 to-slate-500 text-slate-900 font-semibold;
 }
-#final-scores .final-score-entry:nth-child(3) { /* Bronze */
+.final-score-bronze {
     @apply bg-gradient-to-r from-orange-400 to-yellow-600 text-slate-900 font-semibold;
-}
-
-/* Adding some subtle animations or transitions to elements if desired */
-.transition-smooth {
-    transition-property: background-color, border-color, color, fill, stroke, opacity, box-shadow, transform;
-    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-    transition-duration: 150ms;
 }
 
 /* Styling for the player list in the lobby */
 #player-list-lobby .player-entry {
-    @apply bg-slate-600/50 p-3 rounded-md shadow;
+    /* Base styling already applied in updatePlayerList JS using Tailwind classes */
+    /* Example: bg-slate-600/50 p-3 rounded-md shadow flex justify-between items-center */
 }
-#player-list-lobby .player-name {
-    @apply font-medium;
-}
-#player-list-lobby .player-host-badge {
-    @apply ml-2 bg-sky-500 text-white text-xs font-semibold px-2 py-0.5 rounded-full;
-}
+/* #player-list-lobby .player-name is styled inline in JS */
+/* #player-list-lobby .player-host-badge is styled inline in JS */
 
 /* Ensure global box-sizing for easier layout management if not already handled by Tailwind's preflight */
-/* Tailwind's preflight usually includes this, but it's good to be aware of */
-/*
 html {
-  box-sizing: border-box;
+    box-sizing: border-box;
 }
 *, *::before, *::after {
-  box-sizing: inherit;
+    box-sizing: inherit;
 }
-*/

@@ -13,8 +13,8 @@ const PORT = process.env.PORT || 3000;
 
 // --- Game Configuration ---
 const QUESTION_TIME_LIMIT = 60; // seconds
-const CORRECT_ANSWER_DISPLAY_DURATION = 3000; // milliseconds
-const MAX_PLAYERS = 8; // NEW: Define max players
+const CORRECT_ANSWER_DISPLAY_DURATION = 3000; // milliseconds (Set to 3 seconds)
+const MAX_PLAYERS = 8; // Define max players
 
 let allQuestionSets = {};
 let availableCategories = [];
@@ -99,12 +99,10 @@ io.on('connection', (socket) => {
                 socket.emit('lobbyError', 'Das Spiel in dieser Lobby ist bereits beendet.');
                 return;
             }
-            // UPDATED: Check against MAX_PLAYERS
             if (lobby.gameState === 'active' && lobby.players.length >= MAX_PLAYERS && !lobby.players.find(p => p.id === socket.id)) {
                 socket.emit('lobbyError', 'Diese Lobby ist voll und das Spiel läuft bereits.');
                 return;
             }
-            // UPDATED: Check against MAX_PLAYERS
             if (lobby.gameState === 'waiting' && lobby.players.length >= MAX_PLAYERS) {
                 socket.emit('lobbyError', 'Diese Lobby ist voll.');
                 return;
@@ -151,7 +149,7 @@ io.on('connection', (socket) => {
     socket.on('startGame', ({ lobbyId, categoryKey }) => {
         const lobby = lobbies[lobbyId];
         if (lobby && lobby.players.find(p => p.id === socket.id && p.isHost)) {
-            if (lobby.players.length < 1) { // Minimum 1 player to start (host can play alone if desired)
+            if (lobby.players.length < 1) {
                 socket.emit('startGameError', 'Nicht genügend Spieler, um das Spiel zu starten.');
                 return;
             }
@@ -226,9 +224,7 @@ io.on('connection', (socket) => {
             player.streak++;
             const timeRemaining = Math.max(0, QUESTION_TIME_LIMIT - timeTaken);
             const pointsFromTime = Math.floor(timeRemaining);
-
             pointsEarned = pointsFromTime * player.streak;
-
         } else {
             player.streak = 0;
             pointsEarned = 0;
@@ -432,15 +428,23 @@ io.on('connection', (socket) => {
         const currentQuestion = lobby.questions[lobby.currentQuestionIndex];
         if(!currentQuestion){
             console.error("processQuestionEnd: currentQuestion is undefined. Lobby:", lobbyId, "Index:", lobby.currentQuestionIndex);
-            sendNextQuestion(lobbyId);
+            // Attempt to recover or end game gracefully
+            sendNextQuestion(lobbyId); // Try moving to next, might lead to game end if no more questions
             return;
         }
+
+        // --- MODIFIED: Find and send correct index ---
+        const correctIndex = currentQuestion.options.findIndex(option => option === currentQuestion.answer);
+        // --- END MODIFICATION ---
+
         io.to(lobbyId).emit('questionOver', {
             correctAnswer: currentQuestion.answer,
+            correctIndex: correctIndex, // Send index to client
             scores: lobby.players.map(p => ({ id: p.id, name: p.name, score: p.score, streak: p.streak }))
         });
-        console.log(`[DEBUG] Question ${lobby.currentQuestionIndex + 1} over for lobby ${lobbyId}. Displaying answer.`);
+        console.log(`[DEBUG] Question ${lobby.currentQuestionIndex + 1} over for lobby ${lobbyId}. Displaying answer index: ${correctIndex}.`); // Log index
 
+        // Timeout uses CORRECT_ANSWER_DISPLAY_DURATION (set to 3000ms)
         setTimeout(() => {
             sendNextQuestion(lobbyId);
         }, CORRECT_ANSWER_DISPLAY_DURATION);
@@ -472,10 +476,8 @@ io.on('connection', (socket) => {
                 p.hasAnswered = false;
             });
             lobby.currentQuestionIndex = -1;
-
             lobby.selectedCategory = null;
             lobby.questions = [];
-
             lobby.gameState = 'waiting';
             lobby.isPaused = false;
             lobby.remainingTimeOnPause = null;
