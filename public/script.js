@@ -1,4 +1,8 @@
 // public/script.js
+// This is the version from the artifact "multiplayer_quiz_js_tts_feature"
+// with the title "script.js (Robust Answer Reveal & TTS Timing)"
+// It uses the consolidated `speak()` function.
+
 document.addEventListener('DOMContentLoaded', () => {
     const socket = io();
 
@@ -59,17 +63,21 @@ document.addEventListener('DOMContentLoaded', () => {
     let wasTimedOut = false;
 
     // --- Speech Synthesis ---
+    console.log('[DEBUG] Initializing Speech Synthesis...');
     const synth = window.speechSynthesis;
     let voices = [];
+    let currentSpeechUtterance = null; // To manage the current utterance being spoken
 
     function populateVoices() {
         voices = synth.getVoices();
-        console.log('[DEBUG] TTS Voices loaded:', voices.length);
+        console.log('[DEBUG] TTS Voices loaded/changed:', voices.length);
     }
     if (synth.onvoiceschanged !== undefined) {
         synth.onvoiceschanged = populateVoices;
     }
     populateVoices();
+    console.log('[DEBUG] Speech Synthesis initialized. Synth object:', synth);
+
 
     // --- Sound Effects ---
     const soundEffectsVolume = 0.3;
@@ -102,43 +110,45 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    function speakText(text, lang = 'de-DE', onEndCallback = null) {
+    // Consolidated speak function
+    function speak(text, lang = 'de-DE', onEndCallback = null, isQuestion = false) {
         if (isMuted || !synth || !text) {
-            console.log('[DEBUG] TTS: Muted, synth not available, or no text. Skipping speech.');
-            if (onEndCallback) onEndCallback(); // Call callback even if not speaking, to not block flow
+            console.log(`[DEBUG] TTS (${isQuestion ? 'Question' : 'Text'}): Muted, synth not available, or no text. Skipping speech.`);
+            if (onEndCallback) onEndCallback();
             return;
         }
 
         if (synth.speaking) {
-            console.log('[DEBUG] TTS: Cancelling previous speech before speaking new text.');
+            console.log(`[DEBUG] TTS (${isQuestion ? 'Question' : 'Text'}): Cancelling previous speech.`);
             synth.cancel();
         }
 
-        // Need a slight delay for cancel to reliably work before speaking again on some browsers
         setTimeout(() => {
-            const utterance = new SpeechSynthesisUtterance(text);
-            utterance.lang = lang;
+            currentSpeechUtterance = new SpeechSynthesisUtterance(text);
+            currentSpeechUtterance.lang = lang;
 
-            const targetVoice = voices.find(voice => voice.lang === lang && voice.name.toLowerCase().includes('german')); // Basic attempt for German
+            const targetVoice = voices.find(voice => voice.lang === lang && voice.name.toLowerCase().includes('german'));
             if (targetVoice) {
-                utterance.voice = targetVoice;
+                currentSpeechUtterance.voice = targetVoice;
             } else {
                 const defaultLangVoice = voices.find(voice => voice.lang === lang);
-                if (defaultLangVoice) utterance.voice = defaultLangVoice;
+                if (defaultLangVoice) currentSpeechUtterance.voice = defaultLangVoice;
             }
 
-            utterance.onend = () => {
-                console.log('[DEBUG] TTS: Finished speaking - ', text);
+            currentSpeechUtterance.onend = () => {
+                console.log(`[DEBUG] TTS (${isQuestion ? 'Question' : 'Text'}): Finished speaking - `, text);
+                currentSpeechUtterance = null;
                 if (onEndCallback) onEndCallback();
             };
-            utterance.onerror = (event) => {
-                console.error('[DEBUG] TTS: Error - ', event);
-                if (onEndCallback) onEndCallback(); // Call callback even on error to proceed
+            currentSpeechUtterance.onerror = (event) => {
+                console.error(`[DEBUG] TTS (${isQuestion ? 'Question' : 'Text'}): Error - `, event);
+                currentSpeechUtterance = null;
+                if (onEndCallback) onEndCallback();
             };
 
-            console.log('[DEBUG] TTS: Attempting to speak:', text, 'with voice:', utterance.voice ? utterance.voice.name : 'default');
-            synth.speak(utterance);
-        }, 100); // 100ms delay
+            console.log(`[DEBUG] TTS (${isQuestion ? 'Question' : 'Text'}): Attempting to speak:`, text, 'with voice:', currentSpeechUtterance.voice ? currentSpeechUtterance.voice.name : 'default');
+            synth.speak(currentSpeechUtterance);
+        }, 100);
     }
 
 
@@ -724,13 +734,21 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
-        speakQuestion(data.question);
+        // Use the consolidated speak function for questions
+        speak(data.question, 'de-DE', null, true);
 
         currentQuestionIndex = data.questionIndex;
         questionTimeLimit = data.timeLimit;
         if(gameCategoryDisplay) gameCategoryDisplay.textContent = data.category || currentSelectedCategoryKey || "Unbekannt";
 
-        if(questionText) questionText.textContent = data.question;
+        console.log('[DEBUG] newQuestion - Received question data:', data);
+        if (questionText) {
+            console.log('[DEBUG] newQuestion - questionText element found. Setting text to:', data.question);
+            questionText.textContent = data.question;
+        } else {
+            console.error('[DEBUG] newQuestion - questionText element NOT found!');
+        }
+
         if(questionCounter) questionCounter.textContent = `F: ${data.questionIndex + 1}/${data.totalQuestions}`;
 
         const myPlayerData = quizContainer && quizContainer.dataset.players ? JSON.parse(quizContainer.dataset.players) : [];
@@ -838,7 +856,7 @@ document.addEventListener('DOMContentLoaded', () => {
         wasTimedOut = false;
 
         if(feedbackText) {
-            feedbackText.textContent = ''; // Clear "Deine Antwort wurde registriert"
+            feedbackText.textContent = '';
         }
         if(waitingForOthersMsg) waitingForOthersMsg.textContent = "Richtige Antwort wird vorgelesen...";
 
@@ -846,23 +864,27 @@ document.addEventListener('DOMContentLoaded', () => {
             optionsContainer.querySelectorAll('.option-btn').forEach(btn => {
                 btn.disabled = true;
                 btn.classList.remove('selected', 'correct', 'incorrect-picked', 'reveal-correct');
-                if (btn.textContent === data.correctAnswer) {
+                const btnText = btn.textContent.trim().toLowerCase();
+                const correctAnswerText = data.correctAnswer.trim().toLowerCase();
+                console.log(`[DEBUG] Highlighting Check - Button: "${btnText}" vs Correct: "${correctAnswerText}"`);
+                if (btnText === correctAnswerText) {
                     btn.classList.add('reveal-correct');
+                    console.log(`[DEBUG] Highlighting applied to: "${btn.textContent}"`);
                 }
             });
         }
         updateLiveScores(data.scores);
 
-        // Speak the correct answer and then proceed
-        speakText(`Die richtige Antwort war: ${data.correctAnswer}`, 'de-DE', () => {
+        const textToSpeak = `Die richtige Antwort war: ${data.correctAnswer}`;
+        speak(textToSpeak, 'de-DE', () => {
             if(waitingForOthersMsg) waitingForOthersMsg.textContent = "Nächste Frage kommt...";
             setTimeout(() => {
-                if (isHost && currentLobbyId && !isGamePaused) { // Only host triggers next question
-                    console.log('[DEBUG] Host ready for next question after TTS and delay.');
+                if (isHost && currentLobbyId && !isGamePaused) {
+                    console.log('[DEBUG] Host emitting hostReadyForNextQuestion after TTS and 5s delay.');
                     socket.emit('hostReadyForNextQuestion', { lobbyId: currentLobbyId });
                 }
-            }, 1000); // 1 second delay after TTS finishes
-        });
+            }, 5000);
+        }, false); // false for isQuestion
     });
 
     socket.on('gameOver', (data) => {
@@ -924,7 +946,7 @@ document.addEventListener('DOMContentLoaded', () => {
     socket.on('gamePaused', (data) => {
         console.log('[DEBUG] gamePaused event received. Remaining time:', data.remainingTime);
         isGamePaused = true;
-        if (synth && synth.speaking) synth.cancel(); // Stop TTS if game is paused
+        if (synth && synth.speaking) synth.cancel();
         if(gamePausedOverlay) gamePausedOverlay.classList.remove('hidden');
         if(pauseResumeMessage) {
             pauseResumeMessage.textContent = isHost ?
@@ -965,9 +987,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             });
         }
-        // If a question was being read when pause happened, and now resumed, re-read current question if any.
-        // However, server will likely send a timerUpdate or newQuestion soon, which will handle TTS.
-        // For now, let's assume the server's flow will re-initiate TTS if needed via newQuestion.
         console.log('[DEBUG] gameResumed: UI updated for resume.');
     });
 
