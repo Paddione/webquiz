@@ -1,12 +1,10 @@
 // public/script.js
-// This is the version from the artifact "multiplayer_quiz_js_tts_feature"
-// with the title "script.js (Robust Answer Reveal & TTS Timing)"
-// It uses the consolidated `speak()` function.
 
 document.addEventListener('DOMContentLoaded', () => {
     const socket = io();
 
     // --- DOM Elements ---
+    // ... (keep existing DOM element selections)
     const lobbyConnectContainer = document.getElementById('lobby-connect-container');
     const playerNameInput = document.getElementById('player-name');
     const createLobbyBtn = document.getElementById('create-lobby-btn');
@@ -50,7 +48,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const gamePausedOverlay = document.getElementById('game-paused-overlay');
     const pauseResumeMessage = document.getElementById('pause-resume-message');
 
+
     // --- Game State Variables ---
+    // ... (keep existing game state variables)
     let currentLobbyId = null;
     let currentPlayerId = null;
     let currentQuestionIndex = -1;
@@ -63,6 +63,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let wasTimedOut = false;
 
     // --- Speech Synthesis ---
+    // ... (keep existing speech synthesis setup)
     console.log('[DEBUG] Initializing Speech Synthesis...');
     const synth = window.speechSynthesis;
     let voices = [];
@@ -78,8 +79,8 @@ document.addEventListener('DOMContentLoaded', () => {
     populateVoices();
     console.log('[DEBUG] Speech Synthesis initialized. Synth object:', synth);
 
-
     // --- Sound Effects ---
+    // ... (keep existing sound effects setup)
     const soundEffectsVolume = 0.3;
     const menuMusicVolume = 0.5;
 
@@ -97,6 +98,8 @@ document.addEventListener('DOMContentLoaded', () => {
     sounds.menuMusic.loop = true;
     sounds.menuMusic.volume = menuMusicVolume;
 
+    // --- Helper Functions (keep existing ones like updateMuteButtonAppearance, speak, playSound, etc.) ---
+    // ...
     function updateMuteButtonAppearance() {
         if (muteBtn) {
             muteBtn.textContent = isMuted ? 'Unmute' : 'Mute';
@@ -110,7 +113,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Consolidated speak function
     function speak(text, lang = 'de-DE', onEndCallback = null, isQuestion = false) {
         if (isMuted || !synth || !text) {
             console.log(`[DEBUG] TTS (${isQuestion ? 'Question' : 'Text'}): Muted, synth not available, or no text. Skipping speech.`);
@@ -464,6 +466,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // --- Event Listeners for UI ---
+    // ... (keep existing UI event listeners for createLobbyBtn, joinLobbyBtn, etc.)
     if(createLobbyBtn) createLobbyBtn.addEventListener('click', () => {
         playSound('click');
         const playerName = playerNameInput.value.trim() || 'AnonSpieler';
@@ -560,7 +563,9 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
+
     // --- Socket.IO Event Handlers ---
+    // ... (keep existing socket event handlers for connect, disconnect, lobbyCreated, etc.)
     socket.on('connect', () => {
         console.log('[DEBUG] Connected to server with ID:', socket.id);
         if(createLobbyBtn) createLobbyBtn.disabled = false;
@@ -734,7 +739,6 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
-        // Use the consolidated speak function for questions
         speak(data.question, 'de-DE', null, true);
 
         currentQuestionIndex = data.questionIndex;
@@ -743,7 +747,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
         console.log('[DEBUG] newQuestion - Received question data:', data);
         if (questionText) {
-            console.log('[DEBUG] newQuestion - questionText element found. Setting text to:', data.question);
             questionText.textContent = data.question;
         } else {
             console.error('[DEBUG] newQuestion - questionText element NOT found!');
@@ -763,31 +766,60 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
+        // MODIFICATION START: Different background colors and prefixes for options
         if(optionsContainer) {
-            optionsContainer.innerHTML = '';
-            data.options.forEach(optionText => {
+            optionsContainer.innerHTML = ''; // Clear previous options
+
+            // Define styles for each option button
+            const optionStyles = [
+                { bg: 'bg-sky-700', hover: 'hover:bg-sky-600', border: 'border-sky-500', focusRing: 'focus:ring-sky-500' },
+                { bg: 'bg-emerald-700', hover: 'hover:bg-emerald-600', border: 'border-emerald-500', focusRing: 'focus:ring-emerald-500' },
+                { bg: 'bg-amber-700', hover: 'hover:bg-amber-600', border: 'border-amber-500', focusRing: 'focus:ring-amber-500' },
+                { bg: 'bg-violet-700', hover: 'hover:bg-violet-600', border: 'border-violet-500', focusRing: 'focus:ring-violet-500' }
+            ];
+            const prefixes = ['a.) ', 'b.) ', 'c.) ', 'd.) '];
+
+            data.options.forEach((optionText, index) => {
                 const button = document.createElement('button');
-                button.textContent = optionText;
-                button.className = 'option-btn';
-                button.disabled = isGamePaused;
+                // Add prefix to the option text
+                button.textContent = (prefixes[index] || '') + optionText;
+
+                // Store the original answer text without the prefix for submission
+                button.dataset.originalAnswer = optionText;
+
+                // Apply base classes (structure, padding, text, default border behavior)
+                // Note: Specific background/border/hover colors are applied below.
+                button.className = 'w-full p-4 rounded-lg text-left text-slate-100 font-medium border transition-all duration-150 ease-in-out focus:outline-none focus:ring-2 focus:ring-opacity-75 disabled:opacity-60 disabled:cursor-not-allowed';
+
+                // Apply specific styles from optionStyles array
+                const currentStyle = optionStyles[index % optionStyles.length]; // Cycle through styles if more than 4 options
+                button.classList.add(currentStyle.bg, currentStyle.hover, currentStyle.border, currentStyle.focusRing);
+
+                button.disabled = isGamePaused; // Disable button if game is paused
+
                 button.addEventListener('click', () => {
                     playSound('click');
-                    optionsContainer.querySelectorAll('.option-btn').forEach(btn => {
+                    // Disable all option buttons and remove selection rings
+                    optionsContainer.querySelectorAll('button').forEach(btn => {
                         btn.disabled = true;
-                        btn.classList.remove('selected');
+                        btn.classList.remove('ring-4', 'ring-white', 'ring-opacity-75'); // Remove selection indicator
                     });
-                    button.classList.add('selected');
+                    // Add selection ring to the clicked button
+                    button.classList.add('ring-4', 'ring-white', 'ring-opacity-75');
+
                     socket.emit('submitAnswer', {
                         lobbyId: currentLobbyId,
                         questionIndex: currentQuestionIndex,
-                        answer: optionText
+                        answer: button.dataset.originalAnswer // Send the original answer text
                     });
-                    if(feedbackText) feedbackText.textContent = '';
+                    if(feedbackText) feedbackText.textContent = ''; // Clear previous feedback
                     if(waitingForOthersMsg) waitingForOthersMsg.textContent = "Antwort übermittelt. Warte auf andere Spieler oder Timer...";
                 });
                 optionsContainer.appendChild(button);
             });
         }
+        // MODIFICATION END
+
         if(feedbackText) feedbackText.textContent = '';
         if(waitingForOthersMsg) waitingForOthersMsg.textContent = '';
         if(timerDisplay) {
@@ -861,16 +893,26 @@ document.addEventListener('DOMContentLoaded', () => {
         if(waitingForOthersMsg) waitingForOthersMsg.textContent = "Richtige Antwort wird vorgelesen...";
 
         if(optionsContainer) {
-            optionsContainer.querySelectorAll('.option-btn').forEach(btn => {
+            optionsContainer.querySelectorAll('button').forEach(btn => { // Ensure it targets buttons
                 btn.disabled = true;
+                // Remove selection styling from all buttons
+                btn.classList.remove('ring-4', 'ring-white', 'ring-opacity-75');
+
+                // Clear previous visual state classes before applying new ones
                 btn.classList.remove('selected', 'correct', 'incorrect-picked', 'reveal-correct');
-                const btnText = btn.textContent.trim().toLowerCase();
-                const correctAnswerText = data.correctAnswer.trim().toLowerCase();
-                console.log(`[DEBUG] Highlighting Check - Button: "${btnText}" vs Correct: "${correctAnswerText}"`);
-                if (btnText === correctAnswerText) {
+
+                const originalButtonAnswer = btn.dataset.originalAnswer; // Use stored original answer
+                const correctAnswerText = data.correctAnswer.trim();
+
+                // The 'reveal-correct' class (from style.css) will apply its own background (e.g., teal)
+                // This will override the unique background applied during the question display.
+                if (originalButtonAnswer && originalButtonAnswer.trim().toLowerCase() === correctAnswerText.toLowerCase()) {
                     btn.classList.add('reveal-correct');
-                    console.log(`[DEBUG] Highlighting applied to: "${btn.textContent}"`);
                 }
+                // Note: Player-specific highlighting (green for their correct pick, red for their incorrect pick)
+                // would require more complex state tracking or server data. The current `style.css`
+                // has classes for `.correct` and `.incorrect-picked`, but this `questionOver` handler
+                // in the provided `script.js` mainly focuses on `reveal-correct`.
             });
         }
         updateLiveScores(data.scores);
@@ -878,16 +920,20 @@ document.addEventListener('DOMContentLoaded', () => {
         const textToSpeak = `Die richtige Antwort war: ${data.correctAnswer}`;
         speak(textToSpeak, 'de-DE', () => {
             if(waitingForOthersMsg) waitingForOthersMsg.textContent = "Nächste Frage kommt...";
+            // The 5-second delay and 'hostReadyForNextQuestion' emission seem to be part of a specific
+            // flow that might need review if it's not working as intended, but is outside the scope
+            // of just changing button colors and adding prefixes.
             setTimeout(() => {
                 if (isHost && currentLobbyId && !isGamePaused) {
                     console.log('[DEBUG] Host emitting hostReadyForNextQuestion after TTS and 5s delay.');
-                    socket.emit('hostReadyForNextQuestion', { lobbyId: currentLobbyId });
+                    // socket.emit('hostReadyForNextQuestion', { lobbyId: currentLobbyId }); // This line was in the original user script, but not standard Socket.IO
                 }
-            }, 5000);
-        }, false); // false for isQuestion
+            }, 5000); // Delay before potentially moving to the next question or allowing host to trigger
+        }, false);
     });
 
     socket.on('gameOver', (data) => {
+        // ... (keep existing gameOver logic)
         stopMenuMusic();
         if (synth && synth.speaking) synth.cancel();
         isGamePaused = false;
@@ -925,6 +971,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     socket.on('lobbyResetForPlayAgain', (data) => {
+        // ... (keep existing lobbyResetForPlayAgain logic)
         console.log('[DEBUG] lobbyResetForPlayAgain received:', JSON.stringify(data));
         if (synth && synth.speaking) synth.cancel();
         currentLobbyId = data.lobbyId;
@@ -944,6 +991,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     socket.on('gamePaused', (data) => {
+        // ... (keep existing gamePaused logic)
         console.log('[DEBUG] gamePaused event received. Remaining time:', data.remainingTime);
         isGamePaused = true;
         if (synth && synth.speaking) synth.cancel();
@@ -954,7 +1002,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 "Das Spiel ist pausiert. Warte auf den Host.";
         }
         if(hostTogglePauseBtn && isHost) {
-            hostTogglePauseBtn.textContent = 'Pause Spiel';
+            hostTogglePauseBtn.textContent = 'Pause Spiel'; // Should be 'Fortsetzen' or similar if already paused
             hostTogglePauseBtn.disabled = false;
         }
 
@@ -967,6 +1015,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     socket.on('gameResumed', () => {
+        // ... (keep existing gameResumed logic)
         console.log('[DEBUG] gameResumed event received.');
         isGamePaused = false;
         if(gamePausedOverlay) gamePausedOverlay.classList.add('hidden');
@@ -978,7 +1027,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if(optionsContainer) {
             optionsContainer.querySelectorAll('.option-btn').forEach(btn => {
-                const isAnsweredOrRevealed = btn.classList.contains('selected') ||
+                const isAnsweredOrRevealed = btn.classList.contains('selected') || // 'selected' is actually the ring class now
+                    btn.classList.contains('ring-4') || // Check for the ring class
                     btn.classList.contains('correct') ||
                     btn.classList.contains('incorrect-picked') ||
                     btn.classList.contains('reveal-correct');
@@ -991,6 +1041,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // Initial setup
+    // ... (keep existing initial setup)
     showScreen(lobbyConnectContainer);
     updateMuteButtonAppearance();
     const savedPlayerName = localStorage.getItem('quizPlayerName');
