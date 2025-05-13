@@ -1,914 +1,614 @@
 {
-  "Grundlagen moderner Computernetze": [
+  "Web_Development_01": [
     {
-      "question": "Was ist ein Computernetz?",
+      "question": "Was zeichnet laut der gegebenen Definition ein Multimedia-System aus?",
       "options": [
-        "Ein System zur Speicherung von Daten.",
-        "Eine Verbindung von Computern zur Nutzung gemeinsamer Ressourcen und zum Datenaustausch.",
-        "Ein einzelner Computer zur Informationsverarbeitung.",
-        "Eine Software zur Simulation von Kommunikation."
+        "Seine Fähigkeit, nur Videodateien abzuspielen.",
+        "Sein Fokus ausschließlich auf Text- und Bildverarbeitung.",
+        "Seine Fähigkeit, verschiedene digitale Medientypen zu erzeugen, zu bearbeiten, zu speichern, zu transportieren und zu präsentieren.",
+        "Seine Anforderung, nur analoge Eingabegeräte zu verwenden."
       ],
-      "answer": "Eine Verbindung von Computern zur Nutzung gemeinsamer Ressourcen und zum Datenaustausch."
+      "answer": "Seine Fähigkeit, verschiedene digitale Medientypen zu erzeugen, zu bearbeiten, zu speichern, zu transportieren und zu präsentieren."
     },
     {
-      "question": "Was versteht man im Kontext von Computernetzen unter 'Broadcast'?",
+      "question": "Was ist die primäre Einschränkung des menschlichen Auges, die bei der Gestaltung visueller Multimedia-Inhalte berücksichtigt werden sollte?",
       "options": [
-        "Die Zustellung einer Sendung an einen einzelnen Host.",
-        "Die Zustellung einer Sendung an alle erreichbaren Hosts eines Netzes.",
-        "Eine direkte Verbindung zwischen zwei Hosts.",
-        "Das Versenden von Datenpaketen über das Internet."
+        "Unfähigkeit, die Farbe Blau wahrzunehmen.",
+        "Schwierigkeit, mehr als 100 Farben zu unterscheiden.",
+        "Reduzierte Empfindlichkeit für Farbunterschiede bei gesättigten Farben und Probleme mit spezifischen Farbkombinationen (z.B. reines Blau für kleine Formen).",
+        "Perfekte Wahrnehmung aller Farbkombinationen gleichermaßen."
       ],
-      "answer": "Die Zustellung einer Sendung an alle erreichbaren Hosts eines Netzes."
+      "answer": "Reduzierte Empfindlichkeit für Farbunterschiede bei gesättigten Farben und Probleme mit spezifischen Farbkombinationen (z.B. reines Blau für kleine Formen)."
     },
     {
-      "question": "Wodurch wird die 'Übertragungsart' (Betriebsart) laut den Quellen bestimmt?",
+      "question": "Welcher Prozess wandelt die kontinuierliche Amplitude (Y-Achse) eines analogen Signals in diskrete digitale Werte um?",
       "options": [
-        "Durch die Anzahl der Kommunikationsteilnehmer.",
-        "Durch die Richtung des Informationsflusses.",
-        "Durch die Übertragungsrate.",
-        "Durch die Entfernung zwischen Kommunikationspartnern."
+        "Abtastung (Sampling)",
+        "Quantisierung",
+        "Modulation",
+        "Filterung"
       ],
-      "answer": "Durch die Richtung des Informationsflusses."
+      "answer": "Quantisierung"
     },
     {
-      "question": "Was misst ein tracert-Tool laut ITI21?",
+      "question": "Was war die primäre Einschränkung des ursprünglichen 7-Bit-ASCII-Codes, die zu länderspezifischen Anpassungen führte?",
       "options": [
-        "Die Netzwerkauslastung.",
-        "Die Anzahl der Kommunikationsteilnehmer.",
-        "Die Route zu einem Ziel und ggf. geografische Informationen.",
-        "Die Übertragungsart."
+        "Er enthielt zu viele nicht druckbare Zeichen.",
+        "Er konnte keine Zahlen darstellen.",
+        "Es fehlten Zeichen, die für andere Sprachen als Englisch benötigt wurden (z.B. Umlaute, Akzente).",
+        "Er benötigte zu viel Speicherplatz."
       ],
-      "answer": "Die Route zu einem Ziel und ggf. geografische Informationen."
+      "answer": "Es fehlten Zeichen, die für andere Sprachen als Englisch benötigt wurden (z.B. Umlaute, Akzente)."
     },
     {
-      "question": "Welches Volumen kann ein Kanal mit einer Latenz von 100 ms und einer Übertragungsrate von 10 Mbit/s aufnehmen?",
+      "question": "Was ist das Kernprinzip hinter der Effektivität der MP3-Audiokompression?",
       "options": [
-        "100 Mbit.",
-        "1 Mbit.",
-        "10 Mbit.",
-        "0.1 Mbit."
+        "Verlustfreie Speicherung von Audiodaten mittels Huffman-Kodierung.",
+        "Signifikante Erhöhung der Abtastrate.",
+        "Entfernung von für das menschliche Ohr nicht wahrnehmbaren Frequenzen mithilfe eines psychoakustischen Modells.",
+        "Umwandlung von Stereo-Audio in Mono."
       ],
-      "answer": "1 Mbit."
+      "answer": "Entfernung von für das menschliche Ohr nicht wahrnehmbaren Frequenzen mithilfe eines psychoakustischen Modells."
     },
     {
-      "question": "Was ist im Standard IEEE 802.1Q zusammengefasst?",
+      "question": "Wie unterscheidet sich MIDI grundlegend von Audioformaten wie MP3 oder WAV?",
       "options": [
-        "Sicherheitsmechanismen für WLANs.",
-        "Verfahren zur IP-Adressierung.",
-        "Ergebnisse zur Priorisierung der Übertragung in IP-Netzen.",
-        "Definitionen für Glasfaserkabel."
+        "MIDI speichert hochauflösende analoge Schallwellen.",
+        "MIDI speichert Anweisungen zur Steuerung digitaler Instrumente (Noten, Timing, Anschlagstärke), nicht den tatsächlichen Klang.",
+        "MIDI-Dateien sind deutlich größer als MP3-Dateien.",
+        "MIDI wird hauptsächlich für Video-Soundtracks verwendet."
       ],
-      "answer": "Ergebnisse zur Priorisierung der Übertragung in IP-Netzen."
+      "answer": "MIDI speichert Anweisungen zur Steuerung digitaler Instrumente (Noten, Timing, Anschlagstärke), nicht den tatsächlichen Klang."
     },
     {
-      "question": "Welche Anwendung sollte laut Quelle mit hoher Priorität übertragen werden, um Latenz und Jitter zu minimieren?",
+      "question": "Welche Farbe ergibt sich im additiven RGB-Farbmodell durch die Kombination von rotem, grünem und blauem Licht bei maximaler Intensität?",
       "options": [
-        "E-Mail-Übertragung.",
-        "Datei-Downloads.",
-        "Voice over IP.",
-        "Web-Browsing."
+        "Schwarz",
+        "Weiß",
+        "Cyan",
+        "Magenta"
       ],
-      "answer": "Voice over IP."
+      "answer": "Weiß"
     },
     {
-      "question": "Welches Schichtenmodell wird in den Quellen neben dem TCP/IP-Modell diskutiert?",
+      "question": "Warum enthalten CMYK-Drucker oft eine separate schwarze (K) Tintenpatrone?",
       "options": [
-        "Das Internet-Modell.",
-        "Das Client-Server-Modell.",
-        "Das OSI-Schichtenmodell.",
-        "Das Peer-to-Peer-Modell."
+        "Um Farben heller zu machen.",
+        "Weil das Mischen von C, M und Y Grau ergibt, nicht echtes Schwarz, und um farbige Tinte zu sparen.",
+        "Um das Drucken auf dunklem Papier zu ermöglichen.",
+        "Schwarze Tinte ist billiger als farbige Tinten."
       ],
-      "answer": "Das OSI-Schichtenmodell."
+      "answer": "Weil das Mischen von C, M und Y Grau ergibt, nicht echtes Schwarz, und um farbige Tinte zu sparen."
     },
     {
-      "question": "Was realisieren Dienste in Computernetzen?",
+      "question": "Was ist ein Hauptvorteil von Vektorgrafiken gegenüber Pixelgrafiken (Rastergrafiken)?",
       "options": [
-        "Hardware-Komponenten.",
-        "Benutzeroberflächen.",
-        "Protokolle.",
-        "Speichermedien."
+        "Vektorgrafiken eignen sich besser zur Darstellung fotografischer Bilder.",
+        "Vektorgrafiken verlieren beim Vergrößern deutlich an Qualität.",
+        "Vektorgrafiken können ohne Qualitätsverlust auf jede Größe skaliert werden, da sie durch mathematische Gleichungen definiert sind.",
+        "Vektorgrafiken benötigen mehr Speicherplatz für einfache Formen."
       ],
-      "answer": "Protokolle."
+      "answer": "Vektorgrafiken können ohne Qualitätsverlust auf jede Größe skaliert werden, da sie durch mathematische Gleichungen definiert sind."
     },
     {
-      "question": "Wann kann laut Quelle auf die Sitzungsschicht verzichtet werden?",
+      "question": "Welcher JPEG-Modus ermöglicht die progressive Anzeige eines Bildes, beginnend mit einer unscharfen Darstellung, die allmählich schärfer wird, was bei langsamen Verbindungen nützlich ist?",
       "options": [
-        "Wenn keine Daten übertragen werden.",
-        "Wenn das Netz ein Broadcastnetz ist.",
-        "Wenn das Netz keine Netzwerkschicht benötigt.",
-        "Wenn keine Sitzungen zu vereinbaren sind."
+        "Sequenzieller Modus (Baseline System)",
+        "Progressiver Modus (Extended System)",
+        "Hierarchischer Modus",
+        "Verlustfreier Modus"
       ],
-      "answer": "Wenn keine Sitzungen zu vereinbaren sind."
-    },
-    {
-      "question": "Wann können laut Quelle Aufgaben der Sitzungs- und Darstellungsschicht bereits in der Anwendungsschicht inkludiert sein?",
-      "options": [
-        "Immer.",
-        "Nie.",
-        "Gegebenenfalls.",
-        "Nur in Peer-to-Peer-Netzen."
-      ],
-      "answer": "Gegebenenfalls."
-    },
-    {
-      "question": "Wie lange braucht ein Bit von Europa nach Amerika über das Transatlantik-Telefonkabel (TAT-1) bei gegebener Länge und Signalausbreitungsgeschwindigkeit?",
-      "options": [
-        "3600 km / (2/3 * 300.000 km/s).",
-        "18 ms.",
-        "Ca. 0.16 s.",
-        "100 ms."
-      ],
-      "answer": "18 ms."
-    },
-    {
-      "question": "Wie viele Bits können sich bei einer Übertragungsrate von 10 Gbit/s maximal gleichzeitig im TAT-1 Seekabel befinden?",
-      "options": [
-        "3600 km * 10 Gbit/s.",
-        "18 ms * 10 Gbit/s.",
-        "180 Mbit.",
-        "10 Gbit."
-      ],
-      "answer": "180 Mbit."
-    },
-    {
-      "question": "Welche Technologie wird im ersten Kapitel als Basis der verteilten Verarbeitung dargestellt?",
-      "options": [
-        "Multiprozessorsysteme.",
-        "Computernetze.",
-        "Cloud Computing.",
-        "Datenbanken."
-      ],
-      "answer": "Computernetze."
-    },
-    {
-      "question": "Was wird in den Quellen als Problem bei vielen Smarthome-Geräten angesprochen?",
-      "options": [
-        "Hoher Energieverbrauch.",
-        "Komplizierte Installation.",
-        "Sicherheitslücken.",
-        "Hohe Anschaffungskosten."
-      ],
-      "answer": "Sicherheitslücken."
+      "answer": "Progressiver Modus (Extended System)"
     }
   ],
-  "Informationstheorie & Phys.-Tech. Grundlagen": [
+  "Web_Development_02": [
     {
-      "question": "Was ist ein Ziel bei der Quantifizierung von Information?",
+      "question": "Welcher Schnittstellentyp wird typischerweise durch den Standard IEEE 802.11 spezifiziert?",
       "options": [
-        "Messung der Datenkomprimierung.",
-        "Berechnung der erforderlichen Speicherkapazität für Informationen.",
-        "Analyse von Netzwerkprotokollen.",
-        "Bestimmung der Signalstärke."
+        "Kabelgebundenes Ethernet (RJ45)",
+        "Drahtloses lokales Netzwerk (WLAN)",
+        "Universal Serial Bus (USB)",
+        "High-Definition Multimedia Interface (HDMI)"
       ],
-      "answer": "Berechnung der erforderlichen Speicherkapazität für Informationen."
+      "answer": "Drahtloses lokales Netzwerk (WLAN)"
     },
     {
-      "question": "Wie groß ist der Informationsgehalt, wenn man ein Zeichen aus einem Zeichenvorrat von 32 auswählt?",
+      "question": "Was davon wird typischerweise NICHT als Software-Schnittstelle für die Interprozesskommunikation (IPC) betrachtet?",
       "options": [
-        "32 bit.",
-        "log2 32 bit.",
-        "5 bit.",
-        "1 bit."
+        "TCP/UDP Sockets",
+        "Remote Procedure Calls (RPC)",
+        "HDMI-Anschlussbelegung",
+        "Java Database Connectivity (JDBC)"
       ],
-      "answer": "5 bit."
+      "answer": "HDMI-Anschlussbelegung"
     },
     {
-      "question": "Wie viele unterschiedliche Zustände können mit 6 Bit codiert werden?",
+      "question": "Was ist ein primärer physikalischer Unterschied zwischen den im Diagramm gezeigten USB 2.0 Typ-A/B- und USB 3.0 Typ-A/B-Anschlüssen?",
       "options": [
-        "6.",
-        "12.",
-        "32.",
-        "64."
+        "USB 3.0-Anschlüsse sind immer kleiner.",
+        "USB 3.0-Anschlüsse haben zusätzliche Pins (normalerweise blau gefärbt) für höhere Geschwindigkeiten.",
+        "USB 2.0-Anschlüsse verwenden Glasfaser.",
+        "USB 3.0-Anschlüsse unterstützen nur die Stromversorgung, keine Daten."
       ],
-      "answer": "64."
+      "answer": "USB 3.0-Anschlüsse haben zusätzliche Pins (normalerweise blau gefärbt) für höhere Geschwindigkeiten."
     },
     {
-      "question": "Wie groß ist der Entscheidungsgehalt H0 beim Würfeln (6 gleich wahrscheinliche Zustände)?",
+      "question": "Welche Technologie ermöglicht die Benutzerinteraktion direkt auf der Displayoberfläche, wie sie bei Smartphones und Tablets üblich ist?",
       "options": [
-        "log2 6 bit.",
-        "6 bit.",
-        "2.58 bit.",
-        "1 bit."
+        "QWERTZ-Tastatur",
+        "Optische Maus",
+        "Touchscreen",
+        "Trackball"
       ],
-      "answer": "2.58 bit."
+      "answer": "Touchscreen"
     },
     {
-      "question": "Welcher Zusammenhang besteht zwischen dem Entscheidungsgehalt und der Anzahl notwendiger Alternativfragen, um ein Zeichen zu kennzeichnen?",
+      "question": "Was ist das Hauptmerkmal eines 'asymmetrischen' Kodierungsverfahrens?",
       "options": [
-        "Es gibt keinen direkten Zusammenhang.",
-        "Der Entscheidungsgehalt ist gleich der Anzahl notwendiger Alternativfragen.",
-        "Der Entscheidungsgehalt ist größer als die Anzahl der Fragen.",
-        "Der Entscheidungsgehalt ist kleiner als die Anzahl der Fragen."
+        "Kodierung und Dekodierung dauern ungefähr gleich lang.",
+        "Die Dekodierung dauert deutlich länger als die Kodierung.",
+        "Die Kodierung dauert deutlich länger als die Dekodierung.",
+        "Es kann nur für Textdaten verwendet werden."
       ],
-      "answer": "Der Entscheidungsgehalt ist gleich der Zahl notwendiger Alternativfragen nach dem von der…"
+      "answer": "Die Kodierung dauert deutlich länger als die Dekodierung."
     },
     {
-      "question": "Wie verhält sich der Informationsgehalt eines Zeichens x zur seiner Auftrittswahrscheinlichkeit P(x)?",
+      "question": "Was misst die Shannon-Entropie H(A) eines Alphabets A?",
       "options": [
-        "Je kleiner P(x), desto kleiner der Informationsgehalt.",
-        "Je kleiner P(x), desto größer der Informationsgehalt.",
-        "Der Informationsgehalt ist unabhängig von P(x).",
-        "Er verhält sich linear zu P(x)."
+        "Die physische Größe der Zeichen im Alphabet.",
+        "Die maximal zulässige Anzahl von Zeichen im Alphabet.",
+        "Den durchschnittlichen Informationsgehalt pro Zeichen im Alphabet unter Berücksichtigung der Wahrscheinlichkeiten.",
+        "Die während der Kanalcodierung hinzugefügte Redundanz."
       ],
-      "answer": "Je kleiner die Auftrittswahrscheinlichkeit P(x) eines Zeichens x, desto größer soll der Informationsgehalt des Zeichens sein."
+      "answer": "Den durchschnittlichen Informationsgehalt pro Zeichen im Alphabet unter Berücksichtigung der Wahrscheinlichkeiten."
     },
     {
-      "question": "Wie berechnet sich der mittlere Informationsgehalt H(X) für eine Binärquelle mit Zeichen x1(0) und x2(1)?",
+      "question": "Welche verlustfreie Kompressionstechnik weist häufiger vorkommenden Zeichen/Symbolen kürzere Bitfolgen zu?",
       "options": [
-        "H(X) = P(x1) + P(x2).",
-        "H(X) = P(x1) * log2 P(x1) + P(x2) * log2 P(x2).",
-        "H(X) = –P(x1) · log2 P(x1) – P(x2) · log2 P(x2).",
-        "H(X) = log2(P(x1) + P(x2))."
+        "Lauflängenkodierung (RLE)",
+        "Stringersatzcodierung (Wörterbuchkomprimierung)",
+        "Entropiecodierung (z.B. Huffman, Morse)",
+        "Quantisierung"
       ],
-      "answer": "H(X) = –P(x1) · log2 P(x1) – P(x2) · log2 P(x2)."
+      "answer": "Entropiecodierung (z.B. Huffman, Morse)"
     },
     {
-      "question": "Wie wird der Informationsfluss I definiert?",
+      "question": "Was ist das grundlegende Prinzip hinter der verlustbehafteten Kompression?",
       "options": [
-        "Produkt aus Symbolrate und Entropie.",
-        "Quotient aus Entropie und Übertragungszeit.",
-        "Differenz zwischen Kanalkapazität und Transinformation.",
-        "Summe aus Transinformation und Irrelevanz."
+        "Daten werden so komprimiert, dass eine perfekte Rekonstruktion des Originals möglich ist.",
+        "Daten werden mit einem geheimen Schlüssel verschlüsselt.",
+        "Daten werden irreversibel reduziert, indem Informationen entfernt werden, die für Menschen als weniger wahrnehmbar gelten.",
+        "Daten werden dupliziert, um Redundanz zu gewährleisten."
       ],
-      "answer": "Der Quotient aus der Entropie der gesendeten Zeichenfolge der Länge N und der hierzu benötigten Übertragungszeit T."
+      "answer": "Daten werden irreversibel reduziert, indem Informationen entfernt werden, die für Menschen als weniger wahrnehmbar gelten."
     },
     {
-      "question": "Was versteht man unter Kanalkapazität Definition 2.1?",
+      "question": "Was ist ein wesentlicher Vorteil von Solid State Drives (SSDs) gegenüber herkömmlichen magnetischen Festplattenlaufwerken (HDDs)?",
       "options": [
-        "Die maximale Bandbreite eines Kanals.",
-        "Der aktuell übertragene Informationsfluss.",
-        "Der größtmögliche Informationsfluss über einen gestörten Kanal.",
-        "Die Bitfehlerrate eines Kanals."
+        "SSDs verwenden rotierende Platten zur Datenspeicherung.",
+        "SSDs sind im Allgemeinen pro Gigabyte günstiger.",
+        "SSDs haben keine beweglichen Teile und bieten daher höhere Geschwindigkeit, Robustheit und geringeren Stromverbrauch.",
+        "SSDs haben eine viel geringere maximale Speicherkapazität."
       ],
-      "answer": "Der größtmögliche Informationsfluss über einen gestörten Kanal."
+      "answer": "SSDs haben keine beweglichen Teile und bieten daher höhere Geschwindigkeit, Robustheit und geringeren Stromverbrauch."
     },
     {
-      "question": "Worin besteht der Unterschied zwischen einem analogen und einem digitalen Signal?",
+      "question": "Welche Displaytechnologie verwendet selbstleuchtende organische Dioden, wodurch eine separate Hintergrundbeleuchtung überflüssig wird?",
       "options": [
-        "Analog ist wert- und zeitdiskret, digital ist wert- und zeitkontinuierlich.",
-        "Analog ist wert- und zeitkontinuierlich, digital ist wert- und zeitdiskret.",
-        "Analog ist immer digital, aber digital ist nicht immer analog.",
-        "Es gibt keinen Unterschied."
+        "TFT-LCD (Thin-Film Transistor - Liquid Crystal Display)",
+        "Plasma-Display",
+        "AMOLED (Active-Matrix Organic Light Emitting Diode)",
+        "CRT (Kathodenstrahlröhre)"
       ],
-      "answer": "Das analoge Signal ist wert- und zeitkontinuierlich, das digitale Signal ist wert- und zeitdiskret."
-    },
-    {
-      "question": "Erklären Sie den Unterschied zwischen Abtastung und Quantisierung eines analogen Signals.",
-      "options": [
-        "Abtastung ist im Wertebereich, Quantisierung im Zeitbereich.",
-        "Abtastung ist die Diskretisierung im Zeitbereich, Quantisierung im Wertebereich (Signalstufen).",
-        "Beides sind Namen für denselben Prozess.",
-        "Abtastung ist digital, Quantisierung ist analog."
-      ],
-      "answer": "Abtastung ist die Diskretisierung eines kontinuierlichen Signals im Zeitbereich und Quantisierung ist die Diskretisierung eines Signals in Signalstufen, d.h. im entsprechenden Wertebereich."
-    },
-    {
-      "question": "Was ist ein Blockcode laut den Quellen?",
-      "options": [
-        "Ein Code, bei dem Buchstaben mit hoher Wahrscheinlichkeit kurze Codewörter erhalten.",
-        "Ein Code mit variabler Codewortlänge.",
-        "Ein Code, bei dem alle Zeichen die gleiche Länge haben.",
-        "Ein fehlererkennender Code."
-      ],
-      "answer": "Ein Code, bei dem alle Zeichen die gleiche Länge haben."
-    },
-    {
-      "question": "Welches Ziel wird bei der Quellencodierung von deutschem Text verfolgt, insbesondere im Vergleich zu einem Blockcode?",
-      "options": [
-        "Erhöhung der Redundanz.",
-        "Nur so viele Bits verwenden, wie es der Informationsgehalt erfordert.",
-        "Jedes Zeichen mit 8 Bit darstellen.",
-        "Einen Code mit gleicher Codewortlänge für alle Zeichen schaffen."
-      ],
-      "answer": "Ziel der Quellencodierung sollte es sein, nur so viele Zeichen (Bits) zu verwenden, wie es der Informationsgehalt der Zeichen erfordert."
-    },
-    {
-      "question": "Was ist der Zweck der Leitungscodierung (auch Übertragungscodes)?",
-      "options": [
-        "Reduzierung der Redundanz.",
-        "Anpassung der Signale an das Übertragungsmedium.",
-        "Fehlerkorrektur bei der Übertragung.",
-        "Quantifizierung von Information."
-      ],
-      "answer": "Mithilfe der Leitungscodierung kann eine direkte Anpassung der Signale an das Übertragungsmedium realisiert werden."
-    },
-    {
-      "question": "Welche Symbolrate ist erforderlich, um eine Bitrate von 60 Mbit/s zu erreichen, wenn pro Symbol 6 Bits codiert werden können?",
-      "options": [
-        "60 Mbit/s.",
-        "10 Mbit/s.",
-        "360 Mbit/s.",
-        "6 Mbit/s."
-      ],
-      "answer": "10 Mbit/s."
+      "answer": "AMOLED (Active-Matrix Organic Light Emitting Diode)"
     }
   ],
-  "Bitübertragung und Netzzugang": [
+  "Web_Development_03": [
     {
-      "question": "Was bedeutet die Angabe '24 dB/100 m' für die Dämpfung eines Kabels?",
+      "question": "Welche Entität initiiert im Client-Server-Modell typischerweise die Kommunikation durch Senden einer Anfrage?",
       "options": [
-        "Die Übertragungsrate beträgt 24 Mbit/s pro 100 Meter.",
-        "Die Signalstärke sinkt um 24 Dezibel pro 100 Meter Kabellänge.",
-        "Das Kabel hat eine Bandbreite von 24 dB bei 100 MHz.",
-        "Es können maximal 24 Gbit/s über 100 Meter übertragen werden."
+        "Der Server",
+        "Der Client",
+        "Der Netzwerk-Router",
+        "Client und Server gleichzeitig"
       ],
-      "answer": "Die Signalstärke sinkt um 24 Dezibel pro 100 Meter Kabellänge."
+      "answer": "Der Client"
     },
     {
-      "question": "Welchen Steckertyp nennt die Quelle für TP-Netzwerkkabel gemäß EIA/TIA 568A/568B?",
+      "question": "Welche HTTP-Methode wird im Allgemeinen bevorzugt, um große Datenmengen oder Daten zu senden, die nicht in der URL sichtbar sein sollen?",
       "options": [
-        "USB.",
-        "BNC.",
-        "RJ45.",
-        "HDMI."
+        "GET",
+        "POST",
+        "HEAD",
+        "OPTIONS"
       ],
-      "answer": "RJ45."
+      "answer": "POST"
     },
     {
-      "question": "Was ist der Unterschied zwischen einem Patchkabel und einem Verlegekabel laut Quelle?",
+      "question": "Was repräsentiert '#results' in der URI 'https://example.com/search?query=test#results'?",
       "options": [
-        "Patchkabel sind starr, Verlegekabel sind flexibel.",
-        "Patchkabel sind länger, Verlegekabel sind kürzer.",
-        "Patchkabel verbinden Endgeräte mit Dosen/Patchfeldern und sind flexibel; Verlegekabel enden an Datendosen und sind starr.",
-        "Verlegekabel werden vorrangig im Außenbereich eingesetzt, Patchkabel im Innenbereich."
+        "Schema",
+        "Authority",
+        "Query",
+        "Fragment"
       ],
-      "answer": "Patchkabel sind flexibel, während das Verlegekabel relativ starr ist. Das Patchkabel wird für die Verbindung zwischen Datendose bzw. Bodentank und dem Endgerät genutzt."
+      "answer": "Fragment"
     },
     {
-      "question": "Wie groß sind Kerndurchmesser und Manteldurchmesser einer Singlemode-Glasfaser mit der Bezeichnung 9/125 µm?",
+      "question": "Was ist der Hauptunterschied zwischen einer URL (Uniform Resource Locator) und einem URN (Uniform Resource Name)?",
       "options": [
-        "9 µm Mantel, 125 µm Kern.",
-        "9 mm Kern, 125 mm Mantel.",
-        "9 µm Kern, 125 µm Mantel.",
-        "125 µm Kern, 9 µm Mantel."
+        "URL identifiziert, URN lokalisiert.",
+        "URL gibt an, wie zugegriffen wird (Ort), URN bietet einen persistenten, ortsunabhängigen Namen.",
+        "URN wird für Bilder verwendet, URL für Text.",
+        "Es handelt sich um identische Konzepte."
       ],
-      "answer": "9 µm Kerndurchmesser und 125 µm Manteldurchmesser."
+      "answer": "URL gibt an, wie zugegriffen wird (Ort), URN bietet einen persistenten, ortsunabhängigen Namen."
     },
     {
-      "question": "Welchen Wellenlängenbereich nutzt die OM5 Glasfaser laut Quelle?",
+      "question": "Warum wird HTML als Auszeichnungssprache und nicht als Programmiersprache betrachtet?",
       "options": [
-        "1310 nm und 1550 nm.",
-        "850 nm und 953 nm.",
-        "1300 nm.",
-        "Es wird nur eine Wellenlänge genutzt."
+        "Weil es komplexe Berechnungen durchführen kann.",
+        "Weil es Tags verwendet, um Inhalte zu strukturieren und zu beschreiben, anstatt Logik oder Algorithmen zu definieren.",
+        "Weil es einen Compiler zum Ausführen benötigt.",
+        "Weil es nur auf Servern verwendet werden kann."
       ],
-      "answer": "Bei OM5 wird in den Wellenlängenbereichen von 850 nm und 953 nm gearbeitet."
+      "answer": "Weil es Tags verwendet, um Inhalte zu strukturieren und zu beschreiben, anstatt Logik oder Algorithmen zu definieren."
     },
     {
-      "question": "Was ist ein Pigtail im Kontext von Glasfaserkabeln?",
+      "question": "Welche Schicht ist gemäß dem Vergleich der OSI- und TCP/IP-Modelle für das HTTP-Protokoll verantwortlich?",
       "options": [
-        "Ein langes Verlegekabel.",
-        "Ein kurzes Glasfaserkabelstück mit einem Stecker an einem Ende zur Spleißverbindung.",
-        "Ein spezieller Steckertyp für Glasfaser.",
-        "Ein Werkzeug zum Spleißen."
+        "Netzzugang (Network Access)",
+        "Internet",
+        "Transport",
+        "Anwendung (Application)"
       ],
-      "answer": "Ein Pigtail ist ein kurzes Stück Glasfaserkabel, das an einem Ende einen Stecker besitzt. Das andere Ende kann über eine Spleißverbindung mit einem Verlegekabel verbunden werden."
+      "answer": "Anwendung (Application)"
     },
     {
-      "question": "Welche Kabeleigenschaften von TP-Kabeln werden durch das Verdrillen und die Abschirmung beeinflusst?",
+      "question": "Was ist ein primärer Vorteil der Verwendung von XML Schema (XSD) gegenüber Document Type Definition (DTD) zur Definition der XML-Dokumentstruktur?",
       "options": [
-        "Die Länge des Kabels.",
-        "Dämpfung und Übersprechen.",
-        "Die Anzahl der Adern.",
-        "Der Steckertyp."
+        "DTD verwendet XML-Syntax, während XSD dies nicht tut.",
+        "XSD unterstützt einen reichhaltigeren Satz von Datentypen für Elemente und Attribute.",
+        "DTD ist einfacher für die Definition komplexer Strukturen.",
+        "XSD-Dateien sind typischerweise kleiner als DTD-Dateien."
       ],
-      "answer": "Die Dämpfung und das Übersprechen."
+      "answer": "XSD unterstützt einen reichhaltigeren Satz von Datentypen für Elemente und Attribute."
     },
     {
-      "question": "Was bedeuten die Bezeichnungen U/UTP und S/FTP bei TP-Kabeln?",
+      "question": "Welches HTML-Tag wird verwendet, um eine nummerierte Liste zu erstellen?",
       "options": [
-        "Unshielded/Unshielded Twisted Pair und Shielded/Foiled Twisted Pair.",
-        "Uplink/Unidirectional Twisted Pair und Symmetric/Foiled Twisted Pair.",
-        "Unprotected/Unterminated Pair und Secured/Fast Transmission Pair.",
-        "Universal/Unshielded Transfer Protocol und Standard/Fast Transfer Protocol."
+        "<ul>",
+        "<li>",
+        "<dl>",
+        "<ol>"
       ],
-      "answer": "Unshielded/Unshielded Twisted Pair und Shielded/Foiled Twisted Pair."
+      "answer": "<ol>"
     },
     {
-      "question": "Welche Art von MAC-Adresse ist FF:FF:FF:FF:FF:FF?",
+      "question": "Was ist der Zweck des `alt`-Attributs innerhalb eines `<img>`-Tags?",
       "options": [
-        "Eine Unicast-Adresse.",
-        "Eine Multicast-Adresse.",
-        "Eine Broadcast-Adresse.",
-        "Eine ungültige Adresse."
+        "Die Bildausrichtung festzulegen.",
+        "Alternativtext bereitzustellen, der das Bild beschreibt (für Barrierefreiheit und falls das Bild nicht geladen werden kann).",
+        "Die Quell-URL des Bildes zu definieren.",
+        "Die Bildabmessungen festzulegen."
       ],
-      "answer": "Eine Broadcast-Adresse."
+      "answer": "Alternativtext bereitzustellen, der das Bild beschreibt (für Barrierefreiheit und falls das Bild nicht geladen werden kann)."
     },
     {
-      "question": "Ist die MAC-Adresse 00:0A:F2:G1:01:23 gültig?",
+      "question": "Welches neue HTML5-Element ist speziell dafür vorgesehen, den zentralen Hauptinhalt eines Dokuments zu enthalten, ausgenommen Kopfzeilen, Fußzeilen und Seitenleisten?",
       "options": [
-        "Ja, immer.",
-        "Nein, da 'G1' keine gültige hexadezimale Darstellung ist.",
-        "Ja, aber nur für Multicast.",
-        "Das hängt vom Hersteller ab."
+        "<section>",
+        "<article>",
+        "<div>",
+        "<main>"
       ],
-      "answer": "Nein, da 'G1' keine gültige hexadezimale Darstellung ist."
-    },
-    {
-      "question": "Was ist der Hauptzweck des Tools Wireshark laut Quelle?",
-      "options": [
-        "Erstellung von Netzwerkdiagrammen.",
-        "Konfiguration von Netzwerkgeräten.",
-        "Netzwerkanalyse und Paketaufzeichnung/-auswertung.",
-        "Durchführung von Geschwindigkeitstests."
-      ],
-      "answer": "Grundfunktionen der Netzanalyse und des Tools Wireshark kennengelernt...Aufzeichnen und die Analyse von Paketen sowie das gezielte Filtern."
-    },
-    {
-      "question": "Welchen Anzeigefilter geben Sie in Wireshark ein, um nur ICMP-Pakete (wie ping) anzuzeigen?",
-      "options": [
-        "tcp.",
-        "http.",
-        "icmp.",
-        "udp."
-      ],
-      "answer": "icmp."
-    },
-    {
-      "question": "Wodurch wird die Dämpfung in TP-Kabeln laut Quelle beeinflusst?",
-      "options": [
-        "Durch die Anzahl der Hosts.",
-        "Durch die Entfernung und die Frequenz.",
-        "Durch die IP-Adresse.",
-        "Durch die gewählte Dienstklasse."
-      ],
-      "answer": "Die Dämpfung ist von der Entfernung und der Frequenz abhängig."
-    },
-    {
-      "question": "Welche Störungen beeinflussen WLAN laut den Quellen?",
-      "options": [
-        "Dämpfung und Übersprechen im Kabel.",
-        "Reflexionen und Interferenzen.",
-        "Langsame Routing-Protokolle.",
-        "Falsche IP-Adressen."
-      ],
-      "answer": "Reflexionen und Interferenzen."
-    },
-    {
-      "question": "Nennen Sie ein Beispiel für ein Frequenzband, das für WLAN genutzt wird.",
-      "options": [
-        "1550 nm.",
-        "100 MHz.",
-        "2.4 GHz oder 5 GHz.",
-        "30 dB."
-      ],
-      "answer": "2.4 GHz oder 5 GHz."
+      "answer": "<main>"
     }
   ],
-  "Routing in IP-Netzen (ITI24 K08)": [
+  "Web_Development_04": [
     {
-      "question": "Was geschieht mittels Routingprotokollen in einem Netz?",
+      "question": "Was ist das Hauptziel von 'Cascading' (Kaskadierung) in CSS?",
       "options": [
-        "Die Verschlüsselung von Datenpaketen.",
-        "Die Ermittlung der optimalen Wege durch das Netz.",
-        "Die Zuweisung von IP-Adressen.",
-        "Die Erkennung von Netzwerkfehlern."
+        "Sicherzustellen, dass alle Stile zufällig angewendet werden.",
+        "Eine Hierarchie und Regeln zur Auflösung widersprüchlicher Stil-Deklarationen zu definieren, wodurch Stile vererbt und überschrieben werden können.",
+        "Stile nur auf das erste Element einer Seite anzuwenden.",
+        "CSS automatisch in JavaScript umzuwandeln."
       ],
-      "answer": "die optimalen Wege durch ein Netz ermittelt werden."
+      "answer": "Eine Hierarchie und Regeln zur Auflösung widersprüchlicher Stil-Deklarationen zu definieren, wodurch Stile vererbt und überschrieben werden können."
     },
     {
-      "question": "Welchen Dienst bietet die Netzwerkschicht im Internet zunächst an?",
+      "question": "Welche Stil-Deklaration hat gemäß den CSS-Prioritätsregeln (Kaskadierungsreihenfolge) typischerweise die höchste Priorität?",
       "options": [
-        "Einen verbindungsorientierten, zuverlässigen Dienst.",
-        "Einen Dienst mit Bandbreitengarantie.",
-        "Den Best-Effort-Dienst.",
-        "Einen Multicast-Dienst."
+        "Standard-Stylesheet des Browsers.",
+        "Externes Stylesheet, das über `<link>` eingebunden ist.",
+        "Interne Stile, die im `<head>` mit `<style>`-Tags definiert sind.",
+        "Inline-Stile, die direkt auf ein Element über das `style`-Attribut angewendet werden."
       ],
-      "answer": "den Best-Effort-Dienst."
+      "answer": "Inline-Stile, die direkt auf ein Element über das `style`-Attribut angewendet werden."
     },
     {
-      "question": "Welche der folgenden sind Parameter der Dienstgüte (Quality of Service)?",
+      "question": "Was zielt 'Responsive Web Design' hauptsächlich darauf ab, mithilfe von CSS zu erreichen?",
       "options": [
-        "Hostnamen und MAC-Adressen.",
-        "Bandbreite, Restfehlerrate und Verzögerung.",
-        "Hersteller der Netzkomponenten.",
-        "Der verwendete Steckertyp."
+        "Websites schneller laden zu lassen.",
+        "Sicherzustellen, dass Websites auf einer Vielzahl von Geräten und Bildschirmgrößen gut aussehen und funktionieren.",
+        "Website-Inhalte automatisch zu übersetzen.",
+        "Komplexe Animationen zu Websites hinzuzufügen."
       ],
-      "answer": "Bandbreite, Restfehlerrate, Verfügbarkeit, Zuverlässigkeit, Durchsatz, Verzögerung und Überlaststeuerung."
+      "answer": "Sicherzustellen, dass Websites auf einer Vielzahl von Geräten und Bildschirmgrößen gut aussehen und funktionieren."
     },
     {
-      "question": "Wie wird die Schreibweise 192.168.1.0/24 bezeichnet?",
+      "question": "Welcher CSS-Selektor zielt auf ein HTML-Element mit der spezifischen ID 'main-content'?",
       "options": [
-        "Klassenbasierte Notation.",
-        "Subnetzmasken-Notation.",
-        "CIDR-Notation.",
-        "Hexadezimale Notation."
+        ".main-content",
+        "main-content",
+        "#main-content",
+        "*main-content"
       ],
-      "answer": "als CIDR-Notation bezeichnet."
+      "answer": "#main-content"
     },
     {
-      "question": "Wie lautet die Netzmaske in dezimaler und CIDR-Notation für die Adresse 142.150.20.15 bei einer Aufteilung NNN.NNN.HHH.HHH?",
+      "question": "Welche Eigenschaft definiert im CSS Box Model den Raum *außerhalb* des Rahmens, der das Element von anderen Elementen trennt?",
       "options": [
-        "255.255.0.0 und /16.",
-        "255.0.0.0 und /8.",
-        "255.255.255.0 und /24.",
-        "142.150.0.0 und /16."
+        "padding (Innenabstand)",
+        "border (Rahmen)",
+        "margin (Außenabstand)",
+        "content (Inhalt)"
       ],
-      "answer": "255.255.0.0...CIDR-Notation an: /16"
+      "answer": "margin (Außenabstand)"
     },
     {
-      "question": "Nennen Sie eine andere Möglichkeit der Bildung des Interface Identifier bei IPv6, die nicht auf der MAC-Adresse basiert.",
+      "question": "Welcher Typ von CSS-Einheit wird im Allgemeinen für die Erstellung flexibler und responsiver Layouts bevorzugt, da er relativ zu einem anderen Wert skaliert (wie der Größe des Elternelements oder der Viewport-Größe)?",
       "options": [
-        "Manuelle Konfiguration.",
-        "Dynamische Zuweisung durch DHCPv6.",
-        "Zufällige Generierung.",
-        "Basierend auf dem Hostnamen."
+        "Absolute Einheiten (z.B. cm, pt, fester px-Wert)",
+        "Relative Einheiten (z.B. %, em, rem, vw)",
+        "Farbeinheiten (z.B. #FF0000)",
+        "Zeiteinheiten (z.B. s, ms)"
       ],
-      "answer": "zufällige Generierung."
+      "answer": "Relative Einheiten (z.B. %, em, rem, vw)"
     },
     {
-      "question": "Was ist der Unterschied zwischen ARP und NDP?",
+      "question": "Was ist der Unterschied zwischen den Operatoren `==` und `===` in JavaScript?",
       "options": [
-        "ARP wird in IPv6 genutzt, NDP in IPv4.",
-        "ARP ist ein Routingprotokoll, NDP ein Adressierungsprotokoll.",
-        "ARP löst IP-Adressen in MAC-Adressen auf (IPv4), NDP übernimmt diese und weitere Aufgaben in IPv6.",
-        "Es gibt keinen Unterschied."
+        "`==` vergleicht nur den Wert, `===` vergleicht nur den Typ.",
+        "`==` führt eine Typumwandlung durch, bevor die Werte verglichen werden, `===` vergleicht sowohl Wert als auch Typ ohne Typumwandlung.",
+        "`===` wird für Zuweisungen verwendet, `==` für Vergleiche.",
+        "Sie sind funktional identisch."
       ],
-      "answer": "ARP löst IP-Adressen in MAC-Adressen auf (IPv4), NDP übernimmt diese und weitere Aufgaben in IPv6."
+      "answer": "`==` führt eine Typumwandlung durch, bevor die Werte verglichen werden, `===` vergleicht sowohl Wert als auch Typ ohne Typumwandlung."
     },
     {
-      "question": "Wie funktioniert SLAAC?",
+      "question": "Was bedeutet 'Hoisting' in JavaScript?",
       "options": [
-        "Adresszuweisung durch einen zentralen Server.",
-        "Hosts konfigurieren ihre IPv6-Adressen selbstständig basierend auf Informationen vom Router.",
-        "Es ist ein Verfahren zur Namensauflösung.",
-        "Ein Verschlüsselungsprotokoll."
+        "JavaScript-Code läuft schneller.",
+        "Variablen- und Funktionsdeklarationen werden konzeptionell an den Anfang ihres Geltungsbereichs verschoben, bevor der Code ausgeführt wird.",
+        "Fehler werden automatisch korrigiert.",
+        "CSS-Stile werden angewendet, bevor HTML geladen wird."
       ],
-      "answer": "Hosts konfigurieren ihre IPv6-Adressen selbstständig basierend auf Informationen vom Router."
+      "answer": "Variablen- und Funktionsdeklarationen werden konzeptionell an den Anfang ihres Geltungsbereichs verschoben, bevor der Code ausgeführt wird."
     },
     {
-      "question": "Was ist das Prinzip des Forwarding (Weiterleitung)?",
+      "question": "Was ist das Document Object Model (DOM)?",
       "options": [
-        "Das Ändern der Datenpakete.",
-        "Das Kopieren von Datenpaketen.",
-        "Die Übergabe eines Pakets an die nächste Netzkomponente auf dem Weg zum Ziel.",
-        "Das Verwerfen von Datenpaketen."
+        "Ein JavaScript-Framework für Animationen.",
+        "Eine Programmierschnittstelle für HTML- und XML-Dokumente, die die Seitenstruktur als Baum von Objekten darstellt, die von Skripten manipuliert werden können.",
+        "Ein CSS-Präprozessor.",
+        "Eine serverseitige Datenbank."
       ],
-      "answer": "Die Übergabe eines Pakets an die nächste Netzkomponente auf dem Weg zum Ziel."
+      "answer": "Eine Programmierschnittstelle für HTML- und XML-Dokumente, die die Seitenstruktur als Baum von Objekten darstellt, die von Skripten manipuliert werden können."
     },
     {
-      "question": "Was ist Broadcastrouting?",
+      "question": "Wie hängen Sie eine Funktion an, die ausgeführt werden soll, wenn auf eine Schaltfläche mit der ID 'myButton' geklickt wird, unter Verwendung von modernem JavaScript?",
       "options": [
-        "Ein Paket soll an alle anderen Hosts im Netz übertragen werden.",
-        "Ein Paket soll an einen spezifischen Host übertragen werden.",
-        "Ein Verfahren zur Fehlersuche im Netz.",
-        "Ein Protokoll für die sichere Übertragung."
+        "<button id='myButton' onclick='myFunction()'>",
+        "$('#myButton').click(myFunction);",
+        "document.getElementById('myButton').addEventListener('click', myFunction);",
+        "button#myButton { event: click myFunction; }"
       ],
-      "answer": "Ein Paket soll an alle anderen Hosts im Netz übertragen werden."
-    },
-    {
-      "question": "Welches Risiko besteht beim unkontrollerten Fluten (Broadcasting)?",
-      "options": [
-        "Pakete gehen verloren.",
-        "Schleifenbildung kann zu einem Broadcast-Sturm führen und das Netz überlasten.",
-        "Die Reihenfolge der Pakete wird nicht eingehalten.",
-        "Es werden zu wenige Pakete gesendet."
-      ],
-      "answer": "Schleifenbildungen Broadcasts immer weiter kreisen und immer neue Pakete generiert werden, sodass das Netz von einem Broadcast-Sturm überrannt wird."
-    },
-    {
-      "question": "Welcher Routing-Algorithmus wird bei RIP genutzt?",
-      "options": [
-        "Link-State-Algorithmus.",
-        "Distance-Vector-Algorithmus.",
-        "Pfad-Vektor-Algorithmus.",
-        "Spanning Tree Algorithmus."
-      ],
-      "answer": "Distance-Vector-Algorithmus."
-    },
-    {
-      "question": "Welche Metrik verwendet RIP standardmäßig?",
-      "options": [
-        "Bandbreite.",
-        "Verzögerung.",
-        "Anzahl der Hops.",
-        "Zuverlässigkeit."
-      ],
-      "answer": "Anzahl der Hops."
-    },
-    {
-      "question": "Welche Metrik verwendet OSPF standardmäßig?",
-      "options": [
-        "Anzahl der Hops.",
-        "Verfügbare Bandbreite (Kostenberechnung).",
-        "Paketverlustrate.",
-        "Signalstärke."
-      ],
-      "answer": "verfügbare Bandbreite, Ermittlung der Kosten aus Quotient Referenzbandbreite / verfügbare Bandbreite"
-    },
-    {
-      "question": "In welchen Abständen tauschen RIP-Router standardmäßig Informationen aus?",
-      "options": [
-        "Nur bei Änderungen.",
-        "Alle 30 Sekunden, unabhängig von Änderungen.",
-        "Alle 30 Minuten.",
-        "Nur einmal beim Start."
-      ],
-      "answer": "Bei RIP alle 30 s unabhängig davon, ob eine Änderung erfolgt ist"
+      "answer": "document.getElementById('myButton').addEventListener('click', myFunction);"
     }
   ],
-  "Netzkomponenten & Segmentierung (ITI25 K06)": [
+  "Web_Development_05": [
     {
-      "question": "Was versteht man unter einem 'Segment' im Kontext von Internetworking auf der Netzwerkschicht?",
+      "question": "Warum ist Session Management für Webanwendungen entscheidend, da HTTP ein zustandsloses Protokoll ist?",
       "options": [
-        "Ein einzelnes Kabel.",
-        "Ein Netz oder ein Subnetz.",
-        "Eine physikalische Kollisionsdomäne.",
-        "Eine Broadcast-Domäne."
+        "Um Webseiten schneller laden zu lassen.",
+        "Damit sich der Server über mehrere Anfragen hinweg an einen bestimmten Benutzer und dessen Daten (wie Login-Status oder Warenkorb) erinnern kann.",
+        "Um Bilder automatisch zu komprimieren.",
+        "Um HTML-Code zu validieren."
       ],
-      "answer": "In der Netzwerkschicht versteht man unter einem Segment ein Netz oder ein Subnetz."
+      "answer": "Damit sich der Server über mehrere Anfragen hinweg an einen bestimmten Benutzer und dessen Daten (wie Login-Status oder Warenkorb) erinnern kann."
     },
     {
-      "question": "Welche Komponenten dienen laut Quelle zur Verbindung von Netzsegmenten auf der Datenverbindungsschicht?",
+      "question": "Wogegen spricht sich das DRY-Prinzip ('Don't Repeat Yourself' - Wiederhole dich nicht) in der Softwareentwicklung aus?",
       "options": [
-        "Repeater.",
-        "Router.",
-        "Bridges oder Switches.",
-        "Firewalls."
+        "Das Schreiben von Kommentaren im Code.",
+        "Die Verwendung von Funktionen und Methoden.",
+        "Redundanten Code oder Logik, die an mehreren Stellen kopiert wird.",
+        "Das gründliche Testen von Software."
       ],
-      "answer": "Auf der Datenverbindungsschicht werden Netzsegmente mittels Bridges oder Switches verbunden."
+      "answer": "Redundanten Code oder Logik, die an mehreren Stellen kopiert wird."
     },
     {
-      "question": "Welche Komponenten dienen laut Quelle zur Verbindung von Netzen auf der Netzwerkschicht?",
+      "question": "Was ist die Hauptverantwortung der 'View' im Model-View-Controller (MVC) Architekturmuster?",
       "options": [
-        "Repeater.",
-        "Router.",
-        "Switches.",
-        "Hubs."
+        "Verarbeitung von Benutzereingaben und Anwendungsfluss.",
+        "Verwaltung von Daten und Geschäftslogik.",
+        "Präsentation von Daten für den Benutzer (die Benutzeroberfläche).",
+        "Verbindung zur Datenbank."
       ],
-      "answer": "ein Netz oder ein Subnetz, das über Router mit anderen Netzen verbunden werden kann."
+      "answer": "Präsentation von Daten für den Benutzer (die Benutzeroberfläche)."
     },
     {
-      "question": "Nennen Sie ein Beispiel für eine aktive Netzkomponente.",
+      "question": "Was unterscheidet eine 4-Tier-Architektur von einer 3-Tier-Architektur gemäß der Beschreibung in den Folien?",
       "options": [
-        "Patchfeld.",
-        "Kabel.",
-        "Datendose.",
-        "Switch."
+        "Die 4-Tier-Architektur kombiniert Webserver und Anwendungsserver.",
+        "Die 4-Tier-Architektur fügt einen dedizierten Anwendungsserver zwischen Webserver und Datenbankserver hinzu.",
+        "Die 4-Tier-Architektur entfernt den Datenbankserver.",
+        "Die 4-Tier-Architektur verwendet nur clientseitige Verarbeitung."
       ],
-      "answer": "Aktive Komponenten umfassen Repeater, Hubs, Bridges, Switches, Router, Gateways und Firewalls."
+      "answer": "Die 4-Tier-Architektur fügt einen dedizierten Anwendungsserver zwischen Webserver und Datenbankserver hinzu."
     },
     {
-      "question": "Welcher Steckertyp wird für TP-Netzwerkkabel gemäß EIA/TIA 568A/568B genannt?",
+      "question": "Welches Python-Webframework wird als auf dem MVC-Muster basierend erwähnt?",
       "options": [
-        "USB.",
-        "RJ11.",
-        "RJ45.",
-        "HDMI."
+        "Flask",
+        "Pyramid",
+        "Django und web2py",
+        "Bottle"
       ],
-      "answer": "Der Steckertyp für TP-Netzwerkkabel gemäß EIA/TIA 568A/568B ist RJ45."
+      "answer": "Django und web2py"
     },
     {
-      "question": "Was ist der Hauptvorteil beim Einsatz eines Switches im Vergleich zu einem Hub bezüglich der Kollisionsdomäne?",
+      "question": "Wofür wird 'Active Record' im Kontext von Ruby on Rails hauptsächlich verwendet?",
       "options": [
-        "Die Kollisionsdomäne vergrößert sich.",
-        "Die Kollisionsdomäne verkleinert sich.",
-        "Es gibt keine Kollisionsdomäne mehr.",
-        "Die Broadcast-Domäne verkleinert sich."
+        "Definition der Benutzeroberfläche.",
+        "Verarbeitung von HTTP-Anfragen.",
+        "Objektrelationale Abbildung (ORM) - Verwaltung der Zuordnung zwischen Anwendungsobjekten und relationalen Datenbanktabellen.",
+        "Verwaltung der Serverkonfiguration."
       ],
-      "answer": "Beim Einsatz eines Switches verkleinert sich die Kollisionsdomäne."
+      "answer": "Objektrelationale Abbildung (ORM) - Verwaltung der Zuordnung zwischen Anwendungsobjekten und relationalen Datenbanktabellen."
     },
     {
-      "question": "Anhand welcher Adressen lernt ein Switch die Zuordnung von Ports zu Hosts?",
+      "question": "Wofür wird XAMPP hauptsächlich verwendet?",
       "options": [
-        "IP-Adressen.",
-        "Unicast-MAC-Quelladressen.",
-        "Broadcast-Adressen.",
-        "Unicast-MAC-Zieladressen."
+        "Ein Texteditor für die Webentwicklung.",
+        "Ein Versionskontrollsystem wie Git.",
+        "Ein Softwarepaket, das einen Apache-Webserver, eine Datenbank (MariaDB/MySQL) und Interpreter für PHP und Perl für die lokale Entwicklung bereitstellt.",
+        "Eine Cloud-Hosting-Plattform."
       ],
-      "answer": "Unicast-MAC-Quelladresse."
+      "answer": "Ein Softwarepaket, das einen Apache-Webserver, eine Datenbank (MariaDB/MySQL) und Interpreter für PHP und Perl für die lokale Entwicklung bereitstellt."
     },
     {
-      "question": "Wie wird die Weiterleitungsrate (Forwarding Rate) bei Cisco-Switches angegeben?",
+      "question": "Was ist ein Hauptunterschied zwischen den Model-1- und Model-2-Architekturen im Kontext von Java Servlets/JSP?",
       "options": [
-        "Mbit/s.",
-        "GBit/s.",
-        "Mpps (Millions of packets per second).",
-        "Baud."
+        "Model-1 verwendet nur Servlets, Model-2 nur JSPs.",
+        "Model-1 vermischt oft Logik und Präsentation innerhalb von JSPs, während Model-2 eine bessere Trennung fördert, indem Servlets als Controller und JSPs hauptsächlich für Views verwendet werden.",
+        "Model-2 ist älter und weniger effizient als Model-1.",
+        "Model-1 erfordert einen Anwendungsserver, Model-2 nicht."
       ],
-      "answer": "Bei Cisco-Switchen wird die Forwarding Rate in Mpps (Millions of packets per second) angegeben."
+      "answer": "Model-1 vermischt oft Logik und Präsentation innerhalb von JSPs, während Model-2 eine bessere Trennung fördert, indem Servlets als Controller und JSPs hauptsächlich für Views verwendet werden."
     },
     {
-      "question": "Auf welchen Schichten des OSI-Modells kann laut Quelle Segmentierung erfolgen?",
+      "question": "Was unterscheidet die Handhabung gleichzeitiger Anfragen durch Node.js von traditionellen Multi-Threaded-Servern (wie Apache mit PHP oder Tomcat mit Servlets)?",
       "options": [
-        "Nur auf Schicht 1.",
-        "Nur auf Schicht 3.",
-        "Auf Schicht 1, Schicht 2 und Schicht 3.",
-        "Nur auf Schicht 7."
+        "Node.js erstellt für jede einzelne Anfrage einen neuen Thread.",
+        "Node.js verwendet ein Single-Threaded, ereignisgesteuertes, nicht-blockierendes I/O-Modell, um viele Anfragen gleichzeitig zu bearbeiten, ohne viele Threads zu erstellen.",
+        "Node.js kann nicht mehr als eine Anfrage gleichzeitig bearbeiten.",
+        "Node.js benötigt deutlich mehr Speicher pro Verbindung als Threaded-Server."
       ],
-      "answer": "Auf welchen Schichten des OSI-Modells kann eine Segmentierung erfolgen?"
+      "answer": "Node.js verwendet ein Single-Threaded, ereignisgesteuertes, nicht-blockierendes I/O-Modell, um viele Anfragen gleichzeitig zu bearbeiten, ohne viele Threads zu erstellen."
     },
     {
-      "question": "Wofür wird eine Subnetzmaske verwendet?",
+      "question": "Welche Rolle spielt 'npm' (Node Package Manager) im Node.js-Ökosystem?",
       "options": [
-        "Zur Verschlüsselung von Daten.",
-        "Zur Maskierung der Zugehörigkeit der IP-Adresse zum Subnetz.",
-        "Zur Erhöhung der Übertragungsrate.",
-        "Zur Identifizierung des Herstellers einer Netzkomponente."
+        "Es ist die von Node.js verwendete JavaScript-Engine.",
+        "Es ist ein Werkzeug zur Verwaltung und Installation wiederverwendbarer Code-Pakete (Bibliotheken/Module) für Node.js-Projekte.",
+        "Es ist ein Webserver speziell für Node.js.",
+        "Es ist ein Datenbanksystem, das in Node.js integriert ist."
       ],
-      "answer": "Um die Zugehörigkeit zum Subnetz zu maskieren, wird der Begriff Subnetzmaske verwendet."
-    },
-    {
-      "question": "Was bedeutet eine '1' in der Subnetzmaske?",
-      "options": [
-        "Zugehörigkeit des entsprechenden Bits in der Adresse zu einer Hostadresse.",
-        "Das Bit ist für zukünftige Verwendung reserviert.",
-        "Zugehörigkeit des entsprechenden Bits in der Adresse zu einer Subnetzadresse.",
-        "Das Bit ist ungültig."
-      ],
-      "answer": "Eine „1“ in der Subnetzmaske bedeutet Zugehörigkeit des entsprechenden Bits in der Adresse zu einer Subnetzadresse."
-    },
-    {
-      "question": "Wofür steht die Abkürzung VLSM?",
-      "options": [
-        "Virtual Local Switching Mechanism.",
-        "Variable Length Subnet Mask.",
-        "Very Large Scale Monitoring.",
-        "Voice over LAN Standard Method."
-      ],
-      "answer": "VLSM – Variable Length Subnet Mask."
-    },
-    {
-      "question": "Welches der genannten Routingprotokolle unterstützt laut Quelle VLSM *nicht*?",
-      "options": [
-        "RIPv1.",
-        "OSPF.",
-        "BGP.",
-        "RIPv2."
-      ],
-      "answer": "Bei RIPv1 funktioniert VLSM beispielsweise nicht."
-    },
-    {
-      "question": "Wie plant man die Anzahl der Bits für die Subnetzadressierung basierend auf der Anzahl benötigter Subnetze?",
-      "options": [
-        "Man nimmt die Anzahl der Subnetze direkt.",
-        "Man rundet die Anzahl der Subnetze auf die nächste Zweierpotenz und nimmt den Exponenten.",
-        "Man dividiert die Gesamtzahl der Hosts durch die Anzahl der Subnetze.",
-        "Die Anzahl der Bits ist immer fest."
-      ],
-      "answer": "Anzahl der Subnetze feststellen und auf Zweierpotenz runden"
-    },
-    {
-      "question": "Welcher hochwertige Kupferkabeltyp wird neben Cat-7 und Cat-8 genannt?",
-      "options": [
-        "Cat-5.",
-        "Cat-6.",
-        "Koaxialkabel.",
-        "Twisted Pair."
-      ],
-      "answer": "Hochwertige Kupferverkabelung nutzt Cat-7-Kabel."
+      "answer": "Es ist ein Werkzeug zur Verwaltung und Installation wiederverwendbarer Code-Pakete (Bibliotheken/Module) für Node.js-Projekte."
     }
   ],
-  "Kommunikationsmodelle & Dienste (ITI26 K05)": [
+  "Web_Development_06": [
     {
-      "question": "Welche Kommunikationsmodelle werden im ersten Kapitel des Studienhefts ITI26 behandelt?",
+      "question": "Welche Komponente wird bei der Verwendung von XAMPP typischerweise zur Verwaltung der MySQL/MariaDB-Datenbank über eine Weboberfläche verwendet?",
       "options": [
-        "Bus- und Stern-Topologie.",
-        "WAN und LAN.",
-        "Client-Server- und Peer-to-Peer-Netze.",
-        "Token Ring und Ethernet."
+        "Apache HTTP Server",
+        "Tomcat Server",
+        "phpMyAdmin",
+        "Perl Interpreter"
       ],
-      "answer": "In diesem ersten Kapitel beschäftigen wir uns mit den verschiedenen Varianten von Netzwerken und Kommunikationsmodellen... Client-Server-Netze, Peer-to-Peer-Netze (verkürzt: P2P)."
+      "answer": "phpMyAdmin"
     },
     {
-      "question": "Was ist die Abkürzung für Peer-to-Peer-Netze?",
+      "question": "Welche Methode wird in einem Java Servlet typischerweise überschrieben, um HTTP GET-Anfragen zu behandeln?",
       "options": [
-        "C/S.",
-        "LAN.",
-        "P2P.",
-        "WAN."
+        "service()",
+        "init()",
+        "doPost()",
+        "doGet()"
       ],
-      "answer": "Peer-to-Peer-Netze (verkürzt: P2P)."
+      "answer": "doGet()"
     },
     {
-      "question": "Wie nennt man einen Server, der für jede eingehende Anfrage einen neuen Prozess bzw. Thread startet?",
+      "question": "Was ist der Hauptzweck der Annotation `@WebServlet(\"/pfad\")` in einem Java Servlet?",
       "options": [
-        "Iterativer Server.",
-        "Paralleler Server.",
-        "Single-Threaded Server.",
-        "Serieller Server."
+        "Notwendige Java-Pakete zu importieren.",
+        "Die Datenbankverbindungszeichenfolge zu definieren.",
+        "Das Servlet einem spezifischen URL-Pfad zuzuordnen, um es über den Webserver zugänglich zu machen.",
+        "Die erforderliche Java-Version anzugeben."
       ],
-      "answer": "Paralleler Server: Sobald eine Anfrage eintrifft, startet dieser Server einen neuen Prozess bzw. Thread."
+      "answer": "Das Servlet einem spezifischen URL-Pfad zuzuordnen, um es über den Webserver zugänglich zu machen."
     },
     {
-      "question": "Welchen Begriff finden Sie in mancher Literatur anstelle von Thread bei einem parallelen Server?",
+      "question": "Wie werden Java-Code-Schnipsel typischerweise in eine JSP-Datei eingebettet?",
       "options": [
-        "Parent-Server-Prozess.",
-        "Main-Server.",
-        "Child-Server-Prozess.",
-        "Delegierter Prozess."
+        "Mit `<java> ... </java>` Tags.",
+        "Mit Scriptlets `<% ... %>`, Ausdrücken `<%= ... %>` oder Deklarationen `<%! ... %>`.",
+        "Mit `<?java ... ?>` Tags.",
+        "Durch Verlinken einer externen .java-Datei mittels `<link>`."
       ],
-      "answer": "Child-Server-Prozess."
+      "answer": "Mit Scriptlets `<% ... %>`, Ausdrücken `<%= ... %>` oder Deklarationen `<%! ... %>`."
     },
     {
-      "question": "Wie regelt ein Browser den Zugriff auf WWW-Dokumente?",
+      "question": "Wie wird in Servlets und JSPs typischerweise serverseitig auf Parameter zugegriffen, die von einem HTML-Formular gesendet wurden (z.B. über GET oder POST)?",
       "options": [
-        "Durch direkte Dateiübertragung (FTP).",
-        "Durch Kommunikation auf Basis des HTTP-Protokolls mit dem Webserver im Client-Server-Prinzip.",
-        "Durch Peer-to-Peer-Verbindungen zu anderen Browsern.",
-        "Über ein zentrales Verzeichnisdienst-Protokoll."
+        "Mit `session.getParameter(\"paramName\")`",
+        "Mit `request.getParameter(\"paramName\")` (oder `req.getParameter` in Servlets)",
+        "Mit `response.getParameter(\"paramName\")`",
+        "Parameter sind automatisch als globale Variablen verfügbar."
       ],
-      "answer": "Der Browser kommuniziert auf Basis des HTTP-Protokolls mit dem Webserver. Der Zugriff erfolgt nach dem Client-Server-Prinzip in einer Art Dialog."
+      "answer": "Mit `request.getParameter(\"paramName\")` (oder `req.getParameter` in Servlets)"
     },
     {
-      "question": "Welche Protokolle kommen laut Quelle beim Senden von E-Mails zum Einsatz?",
+      "question": "Welches Objekt wird üblicherweise in Servlets/JSP verwendet, um benutzerspezifische Daten über mehrere Anfragen hinweg zu speichern (Session Management)?",
       "options": [
-        "POP3 und IMAP.",
-        "HTTP und FTP.",
-        "SMTP.",
-        "TCP und UDP."
+        "HttpServletRequest",
+        "HttpServletResponse",
+        "ServletContext",
+        "HttpSession"
       ],
-      "answer": "Beim Senden und Empfangen von E-Mails kommen drei verschiedene Protokolle zum Einsatz. Welche sind dies und welche dienen zum Senden und Empfangen? SMTP zum Senden."
+      "answer": "HttpSession"
     },
     {
-      "question": "Welche Protokolle kommen laut Quelle beim Empfangen von E-Mails zum Einsatz?",
+      "question": "Was stellt JDBC (Java Database Connectivity) hauptsächlich bereit?",
       "options": [
-        "SMTP.",
-        "POP3 und IMAP.",
-        "HTTP.",
-        "FTP."
+        "Einen Webserver.",
+        "Eine standardisierte Java-API zur Verbindung mit und Interaktion mit Datenbanken.",
+        "Eine JavaScript-Bibliothek für UI-Elemente.",
+        "Ein objektrelationales Mapping (ORM) Framework."
       ],
-      "answer": "Beim Senden und Empfangen von E-Mails kommen drei verschiedene Protokolle zum Einsatz. Welche sind dies und welche dienen zum Senden und Empfangen? POP3 und IMAP zum Empfangen."
+      "answer": "Eine standardisierte Java-API zur Verbindung mit und Interaktion mit Datenbanken."
     },
     {
-      "question": "Nennen Sie ein Argument für den Einsatz von IMAP anstelle von POP3.",
+      "question": "Was bedeutet 'nicht-blockierendes I/O' (non-blocking I/O) im Kontext von Node.js?",
       "options": [
-        "IMAP löscht E-Mails nach dem Herunterladen vom Server.",
-        "IMAP ist einfacher zu konfigurieren.",
-        "IMAP belässt die E-Mails standardmäßig auf dem Server und synchronisiert den Zustand über mehrere Geräte.",
-        "IMAP ist ausschließlich für Webmail geeignet."
+        "Node.js verhindert jegliche Ein-/Ausgabeoperationen.",
+        "Node.js-Operationen (wie das Lesen von Dateien oder Netzwerkanfragen) halten die Ausführung anderen Codes nicht an; das Programm läuft weiter und behandelt das Ergebnis später über Callbacks oder Promises.",
+        "Node.js kann nur eine I/O-Operation gleichzeitig durchführen.",
+        "Node.js blockiert standardmäßig den gesamten Netzwerkverkehr."
       ],
-      "answer": "IMAP belässt die E-Mails standardmäßig auf dem Server und synchronisiert den Zustand über mehrere Geräte."
+      "answer": "Node.js-Operationen (wie das Lesen von Dateien oder Netzwerkanfragen) halten die Ausführung anderen Codes nicht an; das Programm läuft weiter und behandelt das Ergebnis später über Callbacks oder Promises."
     },
     {
-      "question": "Was bedeutet Medien-Streaming?",
+      "question": "Was ist ein Hauptvorteil der Verwendung von WebSockets (ermöglicht durch Bibliotheken wie 'ws' in Node.js) im Vergleich zu traditionellen HTTP-Anfragen für Echtzeitkommunikation?",
       "options": [
-        "Medien müssen vollständig heruntergeladen werden, bevor die Wiedergabe beginnt.",
-        "Medien werden während der Übertragung wiedergegeben.",
-        "Eine Methode zur Komprimierung von Mediendateien.",
-        "Das Senden von Medien über Peer-to-Peer-Netzwerke."
+        "WebSockets sind langsamer, aber sicherer.",
+        "WebSockets erlauben nur dem Client, Daten an den Server zu senden.",
+        "WebSockets bieten einen persistenten, bidirektionalen Kommunikationskanal, der es dem Server ermöglicht, Daten ohne neue Anfrage an den Client zu pushen.",
+        "WebSockets können nur Textdaten übertragen."
       ],
-      "answer": "Medien werden während der Übertragung wiedergegeben."
+      "answer": "WebSockets bieten einen persistenten, bidirektionalen Kommunikationskanal, der es dem Server ermöglicht, Daten ohne neue Anfrage an den Client zu pushen."
     },
     {
-      "question": "Was sind Service Level Agreements (SLAs)?",
+      "question": "Welche Technologie, JSP/Servlets oder Node.js, wird im Allgemeinen als potenziell schneller im Entwicklungszyklus angesehen, insbesondere für Prototypen, aufgrund ihrer Sprache (JavaScript) und ihres Ökosystems (npm)?",
       "options": [
-        "Technische Spezifikationen für Netzwerkgeräte.",
-        "Vereinbarungen, die technische und nicht-technische Aspekte einer Dienstleistung abbilden.",
-        "Protokolle zur Netzwerküberwachung.",
-        "Richtlinien für die Firewall-Konfiguration."
+        "JSP/Servlets",
+        "Node.js",
+        "Beide sind gleich schnell.",
+        "Keine von beiden eignet sich für schnelles Prototyping."
       ],
-      "answer": "Diese SLAs sind explizit nicht auf technische Aspekte beschränkt. Es geht vielmehr um eine gesamtheitliche Abbildung aller Bedürfnisse."
-    },
-    {
-      "question": "Welche Funktionseinheit des Netzwerkmanagements nach dem OSI-Framework befasst sich mit der Überwachung der Systemleistungen?",
-      "options": [
-        "Fault Management.",
-        "Configuration Management.",
-        "Performance Management.",
-        "Security Management."
-      ],
-      "answer": "Performance [Leistung]."
-    },
-    {
-      "question": "Wofür steht die Abkürzung SNMP?",
-      "options": [
-        "Secure Network Protocol.",
-        "Simple Mail Transfer Protocol.",
-        "Simple Network Management Protocol.",
-        "System Naming and Mapping Protocol."
-      ],
-      "answer": "Simple Network Management Protocol."
-    },
-    {
-      "question": "Was ist ein Trojaner laut den Quellen?",
-      "options": [
-        "Ein Hardwaregerät.",
-        "Ein Programm, das sich als nützlich ausgibt, aber schädliche Funktionen ausführt.",
-        "Eine Technik zur Abwehr von Cyberangriffen.",
-        "Ein Virus, der Daten verschlüsselt."
-      ],
-      "answer": "Ein Trojaner ist ein Programm, das sich als nützlich ausgibt, im Hintergrund aber schädliche Funktionen ausführt."
-    },
-    {
-      "question": "Worin liegt der Unterschied zwischen einem symmetrischen und einem asymmetrischen Verschlüsselungsverfahren?",
-      "options": [
-        "Symmetrisch nutzt ein Schlüsselpaar (Public/Private), asymmetrisch nur einen Schlüssel.",
-        "Asymmetrisch ist immer schneller als symmetrisch.",
-        "Symmetrisch nutzt denselben Schlüssel für Ver- und Entschlüsselung, asymmetrisch nutzt ein Schlüsselpaar (Public/Private).",
-        "Es gibt keinen Unterschied."
-      ],
-      "answer": "Im symmetrischen Verfahren wird nur ein Schlüssel für Ver- und Entschlüsselung verwendet, während im asymmetrischen Verfahren ein Schlüsselpaar zum Einsatz kommt."
-    },
-    {
-      "question": "Was beschreibt der Begriff 'Distributed Ledger' (im Kontext von Blockchain)?",
-      "options": [
-        "Eine zentralisierte Datenbank.",
-        "Ein einzelnes, unveränderliches Datenblatt.",
-        "Eine Datenbasis, deren identische Kopie unter allen beteiligten Knoten eines dezentralen Netzes vorliegt.",
-        "Ein Verfahren zur Datenkomprimierung."
-      ],
-      "answer": "Eine Datenbasis, deren identische Kopie unter allen beteiligten Knoten eines dezentralen Netzes vorliegt."
+      "answer": "Node.js"
     }
   ]
 }
