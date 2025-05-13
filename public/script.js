@@ -1012,7 +1012,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 // Optional: Also apply a persistent style like reveal-correct during/after flash
                 // correctButton.classList.add('reveal-correct');
 
-                // Remove the flashing class after 3 seconds (matching server duration)
+                // ***CHANGED***: Changed from 3 seconds to 5 seconds
+                // Remove the flashing class after 5 seconds
                 setTimeout(() => {
                     if (correctButton) { // Check if button still exists
                         correctButton.classList.remove('flash-correct');
@@ -1020,7 +1021,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         // correctButton.classList.remove('reveal-correct');
                     }
                     if(waitingForOthersMsg) waitingForOthersMsg.textContent = "Nächste Frage kommt..."; // Update status after flash ends
-                }, 3000); // Duration matches CORRECT_ANSWER_DISPLAY_DURATION
+                }, 5000); // ***CHANGED***: Duration increased to 5000ms (5 seconds)
             } else {
                 console.warn("Correct button element not found for index:", data.correctIndex);
             }
@@ -1033,7 +1034,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         updateLiveScores(data.scores); // Update scores based on final data for the round
 
-        // --- NO SPEECH FOR ANSWER ---
+        // --- REMOVED: No TTS for answer ---
         // const textToSpeak = `Die richtige Antwort war: ${data.correctAnswer}`;
         // speak(textToSpeak, ...);
         // --- -------------------- ---

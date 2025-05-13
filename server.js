@@ -13,7 +13,7 @@ const PORT = process.env.PORT || 3000;
 
 // --- Game Configuration ---
 const QUESTION_TIME_LIMIT = 60; // seconds
-const CORRECT_ANSWER_DISPLAY_DURATION = 3000; // milliseconds (Set to 3 seconds)
+const CORRECT_ANSWER_DISPLAY_DURATION = 5000; // milliseconds (Changed to 5 seconds)
 const MAX_PLAYERS = 8; // Define max players
 
 let allQuestionSets = {};
@@ -444,7 +444,7 @@ io.on('connection', (socket) => {
         });
         console.log(`[DEBUG] Question ${lobby.currentQuestionIndex + 1} over for lobby ${lobbyId}. Displaying answer index: ${correctIndex}.`); // Log index
 
-        // Timeout uses CORRECT_ANSWER_DISPLAY_DURATION (set to 3000ms)
+        // Timeout uses CORRECT_ANSWER_DISPLAY_DURATION (now set to 5000ms)
         setTimeout(() => {
             sendNextQuestion(lobbyId);
         }, CORRECT_ANSWER_DISPLAY_DURATION);
