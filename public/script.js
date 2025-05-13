@@ -56,6 +56,20 @@ document.addEventListener('DOMContentLoaded', () => {
     let allAvailableCategoriesCache = [];
     let isMuted = false;
     let isGamePaused = false;
+    let wasTimedOut = false;
+
+    // --- Speech Synthesis ---
+    const synth = window.speechSynthesis;
+    let voices = [];
+
+    function populateVoices() {
+        voices = synth.getVoices();
+        console.log('[DEBUG] TTS Voices loaded:', voices.length);
+    }
+    if (synth.onvoiceschanged !== undefined) {
+        synth.onvoiceschanged = populateVoices;
+    }
+    populateVoices();
 
     // --- Sound Effects ---
     const soundEffectsVolume = 0.3;
@@ -66,7 +80,6 @@ document.addEventListener('DOMContentLoaded', () => {
         correctAnswer: new Audio('/sounds/correctanswer.mp3'),
         incorrectAnswer: new Audio('/sounds/incorrectanswer.mp3'),
         menuMusic: new Audio('/sounds/menumusic.mp3'),
-        newQuestion: new Audio('/sounds/newquestion.mp3'),
         streak: new Audio('/sounds/streak.mp3'),
         timesUp: new Audio('/sounds/timesup.mp3'),
         playerJoined: new Audio('/sounds/lobby_player_join.mp3'),
@@ -89,11 +102,55 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    function speakText(text, lang = 'de-DE', onEndCallback = null) {
+        if (isMuted || !synth || !text) {
+            console.log('[DEBUG] TTS: Muted, synth not available, or no text. Skipping speech.');
+            if (onEndCallback) onEndCallback(); // Call callback even if not speaking, to not block flow
+            return;
+        }
+
+        if (synth.speaking) {
+            console.log('[DEBUG] TTS: Cancelling previous speech before speaking new text.');
+            synth.cancel();
+        }
+
+        // Need a slight delay for cancel to reliably work before speaking again on some browsers
+        setTimeout(() => {
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = lang;
+
+            const targetVoice = voices.find(voice => voice.lang === lang && voice.name.toLowerCase().includes('german')); // Basic attempt for German
+            if (targetVoice) {
+                utterance.voice = targetVoice;
+            } else {
+                const defaultLangVoice = voices.find(voice => voice.lang === lang);
+                if (defaultLangVoice) utterance.voice = defaultLangVoice;
+            }
+
+            utterance.onend = () => {
+                console.log('[DEBUG] TTS: Finished speaking - ', text);
+                if (onEndCallback) onEndCallback();
+            };
+            utterance.onerror = (event) => {
+                console.error('[DEBUG] TTS: Error - ', event);
+                if (onEndCallback) onEndCallback(); // Call callback even on error to proceed
+            };
+
+            console.log('[DEBUG] TTS: Attempting to speak:', text, 'with voice:', utterance.voice ? utterance.voice.name : 'default');
+            synth.speak(utterance);
+        }, 100); // 100ms delay
+    }
+
+
     function toggleMute() {
         isMuted = !isMuted;
         updateMuteButtonAppearance();
         if (isMuted) {
             stopMenuMusic();
+            if (synth && synth.speaking) {
+                console.log('[DEBUG] TTS: Muting, cancelling speech.');
+                synth.cancel();
+            }
         } else {
             const currentScreenElement = [lobbyConnectContainer, lobbyWaitingRoom, gameOverContainer].find(
                 s => s && !s.classList.contains('hidden')
@@ -144,7 +201,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function showScreen(screenElement) {
         console.log('[DEBUG] showScreen called for:', screenElement ? screenElement.id : 'undefined element');
-        [lobbyConnectContainer, lobbyWaitingRoom, quizContainer, gameOverContainer].forEach(s => s.classList.add('hidden'));
+
+        if (synth && synth.speaking && screenElement !== quizContainer) {
+            console.log('[DEBUG] TTS: Screen changed, cancelling speech.');
+            synth.cancel();
+        }
+
+        [lobbyConnectContainer, lobbyWaitingRoom, quizContainer, gameOverContainer].forEach(s => {
+            if(s) s.classList.add('hidden');
+        });
         if (screenElement) {
             screenElement.classList.remove('hidden');
         } else {
@@ -162,7 +227,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (isHost && hostTogglePauseBtn) {
                 hostTogglePauseBtn.classList.remove('hidden');
                 hostTogglePauseBtn.disabled = false;
-                hostTogglePauseBtn.textContent = 'Pause Spiel'; // Keep text consistent
+                hostTogglePauseBtn.textContent = 'Pause Spiel';
             } else if (hostTogglePauseBtn) {
                 hostTogglePauseBtn.classList.add('hidden');
             }
@@ -438,6 +503,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if(leaveLobbyBtn) leaveLobbyBtn.addEventListener('click', () => {
         playSound('click');
         stopMenuMusic();
+        if (synth && synth.speaking) synth.cancel();
         window.location.reload();
     });
 
@@ -499,6 +565,7 @@ document.addEventListener('DOMContentLoaded', () => {
         console.log('[DEBUG] Vom Server getrennt:', reason);
         showGlobalNotification('Vom Server getrennt. Versuche erneut zu verbinden...', 'error', 5000);
         stopMenuMusic();
+        if (synth && synth.speaking) synth.cancel();
         if (isGamePaused && gamePausedOverlay) {
             gamePausedOverlay.classList.add('hidden');
             isGamePaused = false;
@@ -544,11 +611,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 if(gamePausedOverlay) gamePausedOverlay.classList.remove('hidden');
                 if(pauseResumeMessage) {
                     pauseResumeMessage.textContent = isHost ?
-                        "Du hast das Spiel pausiert. (Leertaste zum Pausieren/Fortsetzen)" :
+                        "Spiel pausiert. (Leertaste zum Pausieren/Fortsetzen)" :
                         "Das Spiel ist pausiert. Warte auf den Host.";
                 }
                 if(hostTogglePauseBtn) {
-                    hostTogglePauseBtn.textContent = 'Pause Spiel'; // Keep text consistent
+                    hostTogglePauseBtn.textContent = 'Pause Spiel';
                     hostTogglePauseBtn.disabled = !isHost;
                 }
                 if(optionsContainer) optionsContainer.querySelectorAll('.option-btn').forEach(btn => btn.disabled = true);
@@ -625,7 +692,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (isHost && hostTogglePauseBtn) {
                 hostTogglePauseBtn.classList.remove('hidden');
                 hostTogglePauseBtn.disabled = false;
-                hostTogglePauseBtn.textContent = 'Pause Spiel'; // Reset text
+                hostTogglePauseBtn.textContent = 'Pause Spiel';
             } else if (hostTogglePauseBtn) {
                 hostTogglePauseBtn.classList.add('hidden');
             }
@@ -647,6 +714,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     socket.on('newQuestion', (data) => {
+        wasTimedOut = false;
         if (isGamePaused) {
             isGamePaused = false;
             if(gamePausedOverlay) gamePausedOverlay.classList.add('hidden');
@@ -656,7 +724,8 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
-        playSound('newQuestion');
+        speakQuestion(data.question);
+
         currentQuestionIndex = data.questionIndex;
         questionTimeLimit = data.timeLimit;
         if(gameCategoryDisplay) gameCategoryDisplay.textContent = data.category || currentSelectedCategoryKey || "Unbekannt";
@@ -695,8 +764,8 @@ document.addEventListener('DOMContentLoaded', () => {
                         questionIndex: currentQuestionIndex,
                         answer: optionText
                     });
-                    if(feedbackText) feedbackText.textContent = "Warte auf andere Spieler oder Timer...";
-                    if(waitingForOthersMsg) waitingForOthersMsg.textContent = "Deine Antwort wurde übermittelt!";
+                    if(feedbackText) feedbackText.textContent = '';
+                    if(waitingForOthersMsg) waitingForOthersMsg.textContent = "Antwort übermittelt. Warte auf andere Spieler oder Timer...";
                 });
                 optionsContainer.appendChild(button);
             });
@@ -723,7 +792,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (isGamePaused) {
             if(timerDisplay) {
                 timerDisplay.textContent = isHost ?
-                    `Pausiert (${Math.ceil(timeLeft)}s)` : // Show remaining time for host
+                    `Pausiert (${Math.ceil(timeLeft)}s)` :
                     `Pausiert`;
             }
             return;
@@ -734,9 +803,9 @@ document.addEventListener('DOMContentLoaded', () => {
             timerDisplay.classList.remove('text-amber-400');
             timerDisplay.classList.add('text-red-500');
         } else if (timeLeft === 0) {
+            wasTimedOut = true;
             timerDisplay.classList.add('text-red-500');
-            if(feedbackText) feedbackText.textContent = "Zeit abgelaufen!";
-            if(waitingForOthersMsg) waitingForOthersMsg.textContent = "Antwort wird aufgedeckt...";
+            if(waitingForOthersMsg) waitingForOthersMsg.textContent = "Zeit abgelaufen! Antwort wird aufgedeckt...";
             if(optionsContainer) optionsContainer.querySelectorAll('.option-btn').forEach(btn => btn.disabled = true);
         } else {
             timerDisplay.classList.remove('text-red-500');
@@ -745,42 +814,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     socket.on('answerResult', (data) => {
-        const selectedButton = optionsContainer ? Array.from(optionsContainer.querySelectorAll('.option-btn')).find(btn => btn.classList.contains('selected')) : null;
-
-        if (selectedButton) {
-            selectedButton.classList.remove('correct', 'incorrect-picked', 'selected');
-        }
-        if(optionsContainer) {
-            optionsContainer.querySelectorAll('.option-btn').forEach(btn => {
-                btn.classList.remove('reveal-correct', 'correct', 'incorrect-picked');
-            });
-        }
-
-        if (data.isCorrect) {
-            playSound('correctAnswer');
-            if (data.streak > 1) {
-                setTimeout(() => playSound('streak'), 200);
-            }
-            if(feedbackText) {
-                feedbackText.textContent = `Richtig! +${data.pointsEarned} Punkte.`;
-                feedbackText.className = 'text-lg font-medium text-green-400';
-            }
-            if(selectedButton) selectedButton.classList.add('correct');
-        } else {
-            playSound('incorrectAnswer');
-            if(feedbackText) {
-                feedbackText.textContent = `Falsch. Die Antwort war: ${data.correctAnswer}.`;
-                feedbackText.className = 'text-lg font-medium text-red-400';
-            }
-            if(selectedButton) selectedButton.classList.add('incorrect-picked');
-            if(optionsContainer) {
-                optionsContainer.querySelectorAll('.option-btn').forEach(btn => {
-                    if (btn.textContent === data.correctAnswer) {
-                        btn.classList.add('reveal-correct');
-                    }
-                });
-            }
-        }
+        console.log('[DEBUG] answerResult received:', data);
 
         const myPlayerData = quizContainer && quizContainer.dataset.players ? JSON.parse(quizContainer.dataset.players) : [];
         const me = myPlayerData.find(p => p.id === currentPlayerId);
@@ -789,34 +823,51 @@ document.addEventListener('DOMContentLoaded', () => {
             me.streak = data.streak;
             playerInfoQuiz.textContent = `${me.name} (Punkte: ${me.score})`;
         }
-        if(waitingForOthersMsg) waitingForOthersMsg.textContent = "Warte auf Ergebnisse...";
+        if(waitingForOthersMsg) waitingForOthersMsg.textContent = "Warte auf Ergebnisse aller Spieler...";
+        if(feedbackText) {
+            feedbackText.textContent = `Deine Antwort wurde registriert.`;
+            feedbackText.className = 'text-lg font-medium text-slate-300';
+        }
     });
 
     socket.on('questionOver', (data) => {
-        if (timerDisplay && timerDisplay.textContent === "0s" && !isGamePaused) {
+        console.log('[DEBUG] questionOver received:', data, 'wasTimedOut:', wasTimedOut);
+        if (wasTimedOut && !isGamePaused) {
             playSound('timesUp');
         }
+        wasTimedOut = false;
 
         if(feedbackText) {
-            feedbackText.textContent = `Die richtige Antwort war: ${data.correctAnswer}`;
-            feedbackText.className = 'text-lg font-medium text-sky-300';
+            feedbackText.textContent = ''; // Clear "Deine Antwort wurde registriert"
         }
-        if(waitingForOthersMsg) waitingForOthersMsg.textContent = "Nächste Frage kommt...";
+        if(waitingForOthersMsg) waitingForOthersMsg.textContent = "Richtige Antwort wird vorgelesen...";
 
         if(optionsContainer) {
             optionsContainer.querySelectorAll('.option-btn').forEach(btn => {
                 btn.disabled = true;
-                btn.classList.remove('selected', 'correct', 'incorrect-picked');
+                btn.classList.remove('selected', 'correct', 'incorrect-picked', 'reveal-correct');
                 if (btn.textContent === data.correctAnswer) {
                     btn.classList.add('reveal-correct');
                 }
             });
         }
         updateLiveScores(data.scores);
+
+        // Speak the correct answer and then proceed
+        speakText(`Die richtige Antwort war: ${data.correctAnswer}`, 'de-DE', () => {
+            if(waitingForOthersMsg) waitingForOthersMsg.textContent = "Nächste Frage kommt...";
+            setTimeout(() => {
+                if (isHost && currentLobbyId && !isGamePaused) { // Only host triggers next question
+                    console.log('[DEBUG] Host ready for next question after TTS and delay.');
+                    socket.emit('hostReadyForNextQuestion', { lobbyId: currentLobbyId });
+                }
+            }, 1000); // 1 second delay after TTS finishes
+        });
     });
 
     socket.on('gameOver', (data) => {
         stopMenuMusic();
+        if (synth && synth.speaking) synth.cancel();
         isGamePaused = false;
         if(gamePausedOverlay) gamePausedOverlay.classList.add('hidden');
 
@@ -853,6 +904,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     socket.on('lobbyResetForPlayAgain', (data) => {
         console.log('[DEBUG] lobbyResetForPlayAgain received:', JSON.stringify(data));
+        if (synth && synth.speaking) synth.cancel();
         currentLobbyId = data.lobbyId;
         allAvailableCategoriesCache = Array.isArray(data.availableCategories) ? [...data.availableCategories] : [];
         updatePlayerList(data.players, allAvailableCategoriesCache, data.selectedCategory);
@@ -872,6 +924,7 @@ document.addEventListener('DOMContentLoaded', () => {
     socket.on('gamePaused', (data) => {
         console.log('[DEBUG] gamePaused event received. Remaining time:', data.remainingTime);
         isGamePaused = true;
+        if (synth && synth.speaking) synth.cancel(); // Stop TTS if game is paused
         if(gamePausedOverlay) gamePausedOverlay.classList.remove('hidden');
         if(pauseResumeMessage) {
             pauseResumeMessage.textContent = isHost ?
@@ -879,7 +932,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 "Das Spiel ist pausiert. Warte auf den Host.";
         }
         if(hostTogglePauseBtn && isHost) {
-            hostTogglePauseBtn.textContent = 'Pause Spiel'; // Keep text as "Pause Spiel"
+            hostTogglePauseBtn.textContent = 'Pause Spiel';
             hostTogglePauseBtn.disabled = false;
         }
 
@@ -897,7 +950,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if(gamePausedOverlay) gamePausedOverlay.classList.add('hidden');
 
         if(hostTogglePauseBtn && isHost) {
-            hostTogglePauseBtn.textContent = 'Pause Spiel'; // Keep text as "Pause Spiel"
+            hostTogglePauseBtn.textContent = 'Pause Spiel';
             hostTogglePauseBtn.disabled = false;
         }
 
@@ -912,6 +965,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             });
         }
+        // If a question was being read when pause happened, and now resumed, re-read current question if any.
+        // However, server will likely send a timerUpdate or newQuestion soon, which will handle TTS.
+        // For now, let's assume the server's flow will re-initiate TTS if needed via newQuestion.
         console.log('[DEBUG] gameResumed: UI updated for resume.');
     });
 
