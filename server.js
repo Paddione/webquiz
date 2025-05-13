@@ -14,7 +14,7 @@ const PORT = process.env.PORT || 3000;
 // --- Game Configuration ---
 const QUESTION_TIME_LIMIT = 60; // seconds
 const CORRECT_ANSWER_DISPLAY_DURATION = 3000; // milliseconds
-// Removed: BASE_POINTS_CORRECT, TIME_BONUS_MULTIPLIER, STREAK_BONUS as per new scoring
+const MAX_PLAYERS = 8; // NEW: Define max players
 
 let allQuestionSets = {};
 let availableCategories = [];
@@ -99,11 +99,13 @@ io.on('connection', (socket) => {
                 socket.emit('lobbyError', 'Das Spiel in dieser Lobby ist bereits beendet.');
                 return;
             }
-            if (lobby.gameState === 'active' && lobby.players.length >= 4 && !lobby.players.find(p => p.id === socket.id)) {
+            // UPDATED: Check against MAX_PLAYERS
+            if (lobby.gameState === 'active' && lobby.players.length >= MAX_PLAYERS && !lobby.players.find(p => p.id === socket.id)) {
                 socket.emit('lobbyError', 'Diese Lobby ist voll und das Spiel läuft bereits.');
                 return;
             }
-            if (lobby.gameState === 'waiting' && lobby.players.length >= 4) {
+            // UPDATED: Check against MAX_PLAYERS
+            if (lobby.gameState === 'waiting' && lobby.players.length >= MAX_PLAYERS) {
                 socket.emit('lobbyError', 'Diese Lobby ist voll.');
                 return;
             }
@@ -149,7 +151,7 @@ io.on('connection', (socket) => {
     socket.on('startGame', ({ lobbyId, categoryKey }) => {
         const lobby = lobbies[lobbyId];
         if (lobby && lobby.players.find(p => p.id === socket.id && p.isHost)) {
-            if (lobby.players.length < 1) {
+            if (lobby.players.length < 1) { // Minimum 1 player to start (host can play alone if desired)
                 socket.emit('startGameError', 'Nicht genügend Spieler, um das Spiel zu starten.');
                 return;
             }
@@ -221,14 +223,14 @@ io.on('connection', (socket) => {
         let pointsEarned = 0;
 
         if (isCorrect) {
-            player.streak++; // Increment streak for a correct answer
+            player.streak++;
             const timeRemaining = Math.max(0, QUESTION_TIME_LIMIT - timeTaken);
-            const pointsFromTime = Math.floor(timeRemaining); // 1 point per second left
+            const pointsFromTime = Math.floor(timeRemaining);
 
-            pointsEarned = pointsFromTime * player.streak; // Multiply time points by current streak
+            pointsEarned = pointsFromTime * player.streak;
 
         } else {
-            player.streak = 0; // Reset streak on incorrect answer
+            player.streak = 0;
             pointsEarned = 0;
         }
         player.score += pointsEarned;
@@ -241,9 +243,9 @@ io.on('connection', (socket) => {
         socket.emit('answerResult', {
             isCorrect,
             correctAnswer: currentQuestion.answer,
-            score: player.score, // Send updated total score
-            streak: player.streak, // Send updated streak
-            pointsEarned // Send points earned for this specific question
+            score: player.score,
+            streak: player.streak,
+            pointsEarned
         });
 
         const allAnswered = lobby.players.every(p => p.hasAnswered);
