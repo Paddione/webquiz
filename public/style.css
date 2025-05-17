@@ -21,6 +21,47 @@ body {
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Subtle shadow */
 }
 
+/* NEW: Styles for the option index (a, b, c, d) */
+.option-index {
+    @apply font-bold text-slate-100 mr-3; /* Adjust margin-right as needed for spacing */
+    font-size: 1.5em; /* Makes index 50% larger than button's base font size */
+    line-height: 1; /* Helps with consistent vertical alignment */
+    flex-shrink: 0; /* Prevents index from shrinking */
+}
+
+/* NEW: Styles for the option text content */
+.option-text {
+    @apply text-slate-100 font-medium; /* Base style for the answer text */
+    font-size: 1em; /* This will be the reference size for the index */
+    flex-grow: 1; /* Allows text to take up remaining space in the button */
+}
+
+/* Ensure text colors are maintained for different button states */
+.option-btn.selected .option-index,
+.option-btn.selected .option-text {
+    @apply text-white;
+}
+
+.option-btn.correct .option-index,
+.option-btn.correct .option-text {
+    @apply text-white;
+}
+
+.option-btn.correct.selected .option-index,
+.option-btn.correct.selected .option-text {
+    @apply text-white;
+}
+
+.option-btn.incorrect-picked .option-index,
+.option-btn.incorrect-picked .option-text {
+    @apply text-white;
+}
+
+.option-btn.reveal-correct .option-index,
+.option-btn.reveal-correct .option-text {
+    @apply text-white;
+}
+
 /* Selection indication is primarily by a ring applied in JS, e.g. ring-4 ring-white */
 
 /* Styles for revealing answers after the question is over */

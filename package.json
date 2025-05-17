@@ -1,7 +1,7 @@
 {
   "name": "multiplayer-web-quiz",
   "version": "1.0.0",
-  "description": "A multiplayer web quiz game with lobbies.",
+  "description": "A multiplayer web quiz game with lobbies, now with session support and dotenv.",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
@@ -9,11 +9,14 @@
   },
   "dependencies": {
     "express": "^4.17.1",
-    "socket.io": "^4.0.0"
+    "socket.io": "^4.0.0",
+    "express-session": "^1.17.3",
+    "connect-mongo": "^4.6.0",
+    "dotenv": "^16.0.0"
   },
   "devDependencies": {
     "nodemon": "^2.0.7"
   },
-  "author": "AI Assistant",
+  "author": "Your Name/Team",
   "license": "ISC"
 }

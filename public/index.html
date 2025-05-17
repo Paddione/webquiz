@@ -11,7 +11,7 @@
 </head>
 <body class="bg-gradient-to-br from-slate-900 to-slate-800 text-white font-inter flex flex-col items-center justify-center min-h-screen p-4 selection:bg-sky-500 selection:text-white">
 
-<button id="mute-btn" class="fixed bottom-5 right-5 text-white font-semibold py-2 px-4 rounded-lg shadow-md z-50 transition-all duration-300 opacity-80 hover:opacity-100">
+<button id="mute-btn" class="fixed bottom-5 right-5 text-white font-semibold py-2 px-4 rounded-lg shadow-md z-50 transition-all duration-300 opacity-80 hover:opacity-100 bg-sky-600 hover:bg-sky-700">
     Mute
 </button>
 
@@ -89,6 +89,7 @@
 
     <div class="flex justify-end space-x-2 my-2">
         <button id="host-toggle-pause-btn" class="hidden bg-amber-500 hover:bg-amber-600 text-white font-semibold py-1 px-3 rounded-md text-sm">Pause Spiel</button>
+        <button id="host-skip-to-end-btn" class="hidden bg-red-500 hover:bg-red-600 text-white font-semibold py-1 px-3 rounded-md text-sm">Skip to End</button>
     </div>
 
     <div class="text-center text-sm text-slate-400 mb-3">
@@ -120,6 +121,12 @@
     <h1 class="text-4xl font-bold mb-6 text-sky-400">Spiel vorbei!</h1>
     <div id="final-scores" class="mb-8 space-y-2">
     </div>
+    <button id="submit-score-hall-of-fame-btn" class="hidden w-full bg-indigo-500 hover:bg-indigo-600 text-white font-bold py-3 px-6 rounded-lg text-lg shadow-lg transition-transform transform hover:scale-105 mb-4">
+        Submit to Hall of Fame
+    </button>
+    <p id="submit-score-status-msg" class="text-slate-300 my-2 h-6"></p>
+
+
     <button id="play-again-host-btn" class="hidden w-full bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-6 rounded-lg text-lg shadow-lg transition-transform transform hover:scale-105 mb-4 disabled:opacity-50 disabled:cursor-not-allowed">
         Erneut spielen (Host)
     </button>
