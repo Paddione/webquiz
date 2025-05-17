@@ -857,17 +857,30 @@ document.addEventListener('DOMContentLoaded', () => {
 
             data.options.forEach((optionText, index) => {
                 const button = document.createElement('button');
-                button.textContent = (prefixes[index] || '') + optionText; // Add prefix
                 button.dataset.originalAnswer = optionText; // Store original answer without prefix
 
                 // Base classes for structure and transitions
-                button.className = 'option-btn w-full p-4 rounded-lg text-left text-slate-100 font-medium border transition-all duration-150 ease-in-out focus:outline-none focus:ring-2 focus:ring-opacity-75 disabled:opacity-60 disabled:cursor-not-allowed';
+                button.className = 'option-btn w-full p-4 rounded-lg text-left text-slate-100 font-medium border transition-all duration-150 ease-in-out focus:outline-none focus:ring-2 focus:ring-opacity-75 disabled:opacity-60 disabled:cursor-not-allowed flex items-center';
 
                 // Apply specific colors
                 const currentStyle = optionStyles[index % optionStyles.length];
                 button.classList.add(currentStyle.bg, currentStyle.hover, currentStyle.border, currentStyle.focusRing);
 
                 button.disabled = isGamePaused; // Ensure buttons are enabled if game isn't paused
+
+                // Create index span
+                const indexSpan = document.createElement('span');
+                indexSpan.className = 'option-index text-2xl font-bold mr-3 flex-shrink-0';
+                indexSpan.textContent = prefixes[index] || '';
+
+                // Create text span
+                const textSpan = document.createElement('span');
+                textSpan.className = 'option-text';
+                textSpan.textContent = optionText;
+
+                // Append both spans to button
+                button.appendChild(indexSpan);
+                button.appendChild(textSpan);
 
                 button.addEventListener('click', () => {
                     // --- Play sound effect ---
