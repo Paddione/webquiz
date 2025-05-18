@@ -4,6 +4,10 @@ const http = require('http');
 const socketIo = require('socket.io');
 const fs = require('fs');
 const path = require('path');
+const helmet = require('helmet');
+const rateLimit = require('express-rate-limit');
+const cors = require('cors');
+const compression = require('compression');
 // Assuming dotenv is installed for process.env variables if not provided by Docker
 if (process.env.NODE_ENV !== 'production') { // Only load dotenv in dev if present
     try {
@@ -69,8 +73,28 @@ function shuffleArray(array) {
     return array;
 }
 
+// Security middleware
+app.use(helmet());
+app.use(cors({
+    origin: process.env.ALLOWED_ORIGINS || '*',
+    methods: ['GET', 'POST']
+}));
+
+// Rate limiting
+const limiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 100 // limit each IP to 100 requests per windowMs
+});
+app.use(limiter);
+
 // Serve static files from the "public" directory
 app.use(express.static(path.join(__dirname, 'public')));
+
+// Add caching headers for static files
+app.use(express.static(path.join(__dirname, 'public'), {
+    maxAge: '1d',
+    etag: true
+}));
 
 // Main route to serve the quiz game HTML
 app.get('/', (req, res) => {
@@ -584,6 +608,14 @@ io.on('connection', (socket) => {
         }
     });
 
+    socket.on('error', (error) => {
+        console.error('Socket error:', error);
+    });
+    
+    socket.on('disconnect', (reason) => {
+        // Handle disconnection
+        handlePlayerDisconnect(socket);
+    });
 });
 
 
@@ -593,4 +625,16 @@ server.listen(PORT, () => {
     console.log(`Quiz server running on http://localhost:${PORT}`);
     console.log(`To play, open public/index.html in your browser or navigate to the root URL of this app.`);
     console.log(`If using Docker, it will be mapped to the host port specified in docker-compose.yml (e.g., http://localhost:4000)`);
+});
+
+process.on('uncaughtException', (error) => {
+    console.error('Uncaught Exception:', error);
+    // Perform cleanup
+    process.exit(1);
+});
+
+process.on('SIGTERM', () => {
+    console.log('SIGTERM received. Performing cleanup...');
+    // Cleanup code here
+    process.exit(0);
 });
